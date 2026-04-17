@@ -139,14 +139,14 @@ export default function Home() {
       <motion.div 
         animate={{ y: [0, -15, 0], rotate: [-8, -6, -8] }}
         transition={{ duration: 6, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="absolute top-32 left-4 md:left-12 font-script text-3xl md:text-4xl text-accent opacity-90 z-0 pointer-events-none drop-shadow-sm"
+        className="absolute top-32 left-4 md:left-12 font-script font-bold text-3xl md:text-4xl text-accent opacity-100 z-0 pointer-events-none drop-shadow-md"
       >
         vũ trụ đang lắng nghe...
       </motion.div>
       <motion.div 
         animate={{ y: [0, -10, 0], rotate: [5, 7, 5] }}
         transition={{ duration: 7, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="absolute bottom-40 right-8 md:right-32 font-script text-3xl md:text-4xl text-accent opacity-90 z-0 pointer-events-none drop-shadow-sm"
+        className="absolute bottom-40 right-8 md:right-32 font-script font-bold text-3xl md:text-4xl text-accent opacity-100 z-0 pointer-events-none drop-shadow-md"
       >
         kỷ niệm là báu vật
       </motion.div>
@@ -182,7 +182,7 @@ export default function Home() {
              <motion.div 
               animate={{ y: [0, 8, 0], rotate: [-4, -2, -4] }}
               transition={{ duration: 5, repeat: Infinity, repeatType: "mirror" }}
-              className="absolute -top-6 -right-6 font-script text-3xl text-accent opacity-90 z-20 pointer-events-none drop-shadow-sm"
+              className="absolute -top-6 -right-6 font-script font-bold text-3xl text-accent opacity-100 z-20 pointer-events-none drop-shadow-md"
             >
                chút mộng mơ cho ngày dài
             </motion.div>
