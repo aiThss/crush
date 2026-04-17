@@ -94,6 +94,9 @@ export default function Home() {
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
 
+  const cursorX = useTransform(mouseX, x => x - 192);
+  const cursorY = useTransform(mouseY, y => y - 192);
+
   useEffect(() => {
     setMounted(true);
     setIsMobile(window.innerWidth < 768);
@@ -126,8 +129,8 @@ export default function Home() {
           className="pointer-events-none fixed top-0 left-0 w-96 h-96 rounded-full opacity-20 blur-[100px] z-0"
           style={{ 
             background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)",
-            translateX: useTransform(mouseX, x => x - 192),
-            translateY: useTransform(mouseY, y => y - 192)
+            translateX: cursorX,
+            translateY: cursorY
           }}
         />
       )}
