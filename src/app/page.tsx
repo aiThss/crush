@@ -55,7 +55,7 @@ const InteractiveCard = ({
           rotate: [0, 1, -1, 0]
         }}
         transition={{ 
-          duration: 5 + Math.random() * 2, 
+          duration: 6, 
           repeat: Infinity, 
           repeatType: "mirror",
           ease: "easeInOut"
