@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Music, CloudRain, Sun, Cloud, Wind, Play, Pause, SkipForward } from "lucide-react";
-import { motion } from "framer-motion";
+import { Music, Play, SkipForward, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const VIBES = [
   {
@@ -12,6 +12,8 @@ const VIBES = [
     artist: "Lana Del Rey",
     cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=80",
     animeArt: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&q=80",
+    ytMusicQuery: "Lana Del Rey Summertime Sadness",
+    youtubeQuery: "Lana Del Rey - Summertime Sadness official",
   },
   {
     weather: "Trời đầy nắng ☀️",
@@ -20,6 +22,8 @@ const VIBES = [
     artist: "NewJeans",
     cover: "https://images.unsplash.com/photo-1616423640778-28d1b53229bd?w=400&q=80",
     animeArt: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80",
+    ytMusicQuery: "NewJeans Super Shy",
+    youtubeQuery: "NewJeans - Super Shy MV",
   },
   {
     weather: "Trời se lạnh ❄️",
@@ -28,6 +32,8 @@ const VIBES = [
     artist: "Lofi Girl",
     cover: "https://images.unsplash.com/photo-1497911270199-1bd1e3ed938e?w=400&q=80",
     animeArt: "https://images.unsplash.com/photo-1516280440502-dfda6cb0c538?w=800&q=80",
+    ytMusicQuery: "Lofi Girl cozy coffee shop",
+    youtubeQuery: "lofi girl coffee shop study music",
   },
   {
     weather: "Trời nhiều mây ☁️",
@@ -36,12 +42,14 @@ const VIBES = [
     artist: "Thịnh Suy",
     cover: "https://images.unsplash.com/photo-1456086272160-b223af04bd1b?w=400&q=80",
     animeArt: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=800&q=80",
+    ytMusicQuery: "Thịnh Suy Chuyện Rằng",
+    youtubeQuery: "Thịnh Suy - Chuyện Rằng official MV",
   }
 ];
 
 export default function StreamVibe() {
   const [currentVibe, setCurrentVibe] = useState(VIBES[0]);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     const randomVibe = VIBES[Math.floor(Math.random() * VIBES.length)];
@@ -51,6 +59,19 @@ export default function StreamVibe() {
   const handleShuffle = () => {
     const newVibe = VIBES[Math.floor(Math.random() * VIBES.length)];
     setCurrentVibe(newVibe);
+    setShowMenu(false);
+  };
+
+  const openYouTubeMusic = () => {
+    const url = `https://music.youtube.com/search?q=${encodeURIComponent(currentVibe.ytMusicQuery)}`;
+    window.open(url, "_blank");
+    setShowMenu(false);
+  };
+
+  const openYouTube = () => {
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(currentVibe.youtubeQuery)}`;
+    window.open(url, "_blank");
+    setShowMenu(false);
   };
 
   return (
@@ -79,12 +100,12 @@ export default function StreamVibe() {
       </div>
 
       <div className="glass p-4 rounded-[2rem] flex items-center gap-4 relative overflow-hidden">
-        {/* Progress Bar Background */}
+        {/* Progress Bar Decoration */}
         <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
           <motion.div 
             className="h-full bg-primary"
-            initial={{ width: "0%" }}
-            animate={{ width: isPlaying ? "100%" : "30%" }}
+            initial={{ width: "30%" }}
+            animate={{ width: "70%" }}
             transition={{ duration: 60, ease: "linear", repeat: Infinity }}
           />
         </div>
@@ -101,12 +122,55 @@ export default function StreamVibe() {
         </div>
 
         <div className="flex items-center gap-2 pr-2 relative z-10">
-          <button 
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-12 h-12 rounded-full bg-primary hover:bg-primary-glow flex items-center justify-center text-white transition-colors shadow-sm"
-          >
-            {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
-          </button>
+          {/* Play button that triggers the menu */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              className="w-12 h-12 rounded-full bg-primary hover:bg-primary-glow flex items-center justify-center text-white transition-colors shadow-sm"
+            >
+              <Play size={18} fill="currentColor" className="ml-1" />
+            </button>
+
+            {/* Dropdown menu */}
+            <AnimatePresence>
+              {showMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute bottom-14 right-0 w-52 rounded-2xl overflow-hidden shadow-lg border border-white/50 bg-[var(--background)]"
+                >
+                  <p className="text-xs text-foreground/50 font-medium px-4 pt-3 pb-1 uppercase tracking-widest">Nghe qua</p>
+                  <button
+                    onClick={openYouTubeMusic}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/40 transition-colors text-left"
+                  >
+                    <span className="text-lg">🎵</span>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">YouTube Music</p>
+                      <p className="text-xs text-foreground/60">Mở ứng dụng / trình duyệt</p>
+                    </div>
+                    <ExternalLink size={12} className="ml-auto text-foreground/40" />
+                  </button>
+                  <div className="h-px bg-white/30 mx-4" />
+                  <button
+                    onClick={openYouTube}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/40 transition-colors text-left"
+                  >
+                    <span className="text-lg">▶️</span>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">YouTube</p>
+                      <p className="text-xs text-foreground/60">Không cần tài khoản</p>
+                    </div>
+                    <ExternalLink size={12} className="ml-auto text-foreground/40" />
+                  </button>
+                  <div className="pb-2" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           <button 
             onClick={handleShuffle}
             className="w-10 h-10 rounded-full hover:bg-white/40 flex items-center justify-center text-foreground transition-colors"
@@ -115,6 +179,11 @@ export default function StreamVibe() {
           </button>
         </div>
       </div>
+
+      {/* Backdrop to close menu */}
+      {showMenu && (
+        <div className="fixed inset-0 z-0" onClick={() => setShowMenu(false)} />
+      )}
     </div>
   );
 }
