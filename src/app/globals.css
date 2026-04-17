@@ -7,7 +7,7 @@
   --surface-hover: rgba(183, 202, 207, 0.5); 
   --primary: #92aeb8; 
   --primary-glow: #a8bec7;
-  --accent: #f5e0cf; 
+  --accent: #ceabb0; /* Dusty rose */
 }
 
 @theme inline {
