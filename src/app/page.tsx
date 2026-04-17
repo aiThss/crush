@@ -199,7 +199,7 @@ export default function Home() {
 
           {/* Card 2 */}
           <InteractiveCard isMobile={isMobile} onClick={() => setActiveTab("decider")}>
-            <div className="p-4 rounded-3xl bg-accent/30 text-foreground mb-4 group-hover:bg-accent/40 transition-colors shadow-sm">
+            <div className="p-4 rounded-3xl bg-white/20 text-primary mb-4 group-hover:bg-white/30 transition-colors shadow-sm">
               <Dices size={28} />
             </div>
             <div>
@@ -210,7 +210,7 @@ export default function Home() {
 
           {/* Card 3 */}
           <InteractiveCard isMobile={isMobile} onClick={() => setActiveTab("cosmic")}>
-            <div className="p-4 rounded-3xl bg-primary/20 text-primary mb-4 group-hover:bg-primary/30 transition-colors shadow-sm">
+            <div className="p-4 rounded-3xl bg-white/20 text-primary mb-4 group-hover:bg-white/30 transition-colors shadow-sm">
               <Sparkles size={28} />
             </div>
             <div>

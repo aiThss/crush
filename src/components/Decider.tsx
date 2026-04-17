@@ -31,7 +31,7 @@ export default function Decider() {
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 rounded-2xl bg-accent/30 text-foreground shadow-sm">
+        <div className="p-3 rounded-2xl bg-white/40 text-primary shadow-sm">
           <Dices size={24} />
         </div>
         <div>
