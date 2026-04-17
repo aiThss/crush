@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #06020c; /* Deep Charcoal/Violet */
-  --foreground: #f4ecf9; /* Soft white/lilac */
-  --surface: #10061f; 
-  --surface-hover: #1c0b30;
-  --primary: #9b51e0; /* Deep violet neon */
-  --primary-glow: #b162ff;
-  --accent: #ff62a5; /* Neon pink/rose */
+  --background: #f0eee9;
+  --foreground: #688490;
+  --surface: rgba(187, 208, 215, 0.4); 
+  --surface-hover: rgba(183, 202, 207, 0.5); 
+  --primary: #92aeb8; 
+  --primary-glow: #a8bec7;
+  --accent: #f5e0cf; 
 }
 
 @theme inline {
@@ -18,10 +18,13 @@
   --color-primary: var(--primary);
   --color-primary-glow: var(--primary-glow);
   --color-accent: var(--accent);
-  --font-sans: var(--font-lexend), 'Inter', sans-serif;
   
-  --animate-fade-in: fade-in 0.5s ease-out forwards;
-  --animate-slide-up: slide-up 0.5s ease-out forwards;
+  --font-serif: var(--font-playfair), serif;
+  --font-sans: var(--font-quicksand), sans-serif;
+  --font-script: var(--font-dancing), cursive;
+  
+  --animate-fade-in: fade-in 0.8s ease-out forwards;
+  --animate-slide-up: slide-up 0.8s ease-out forwards;
 }
 
 @keyframes fade-in {
@@ -39,21 +42,26 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  transition: background-color 0.5s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
 }
 
 .glass {
-  background: rgba(16, 6, 31, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(28, 11, 48, 0.6) 0%, rgba(16, 6, 31, 0.3) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(155, 81, 224, 0.15);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  background: var(--surface);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(104, 132, 144, 0.08); /* slight blue tint shadow */
 }
 
 ::-webkit-scrollbar {
@@ -63,9 +71,9 @@ body {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-hover);
+  background: var(--primary);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: var(--primary-glow);
 }

@@ -56,31 +56,31 @@ export default function StreamVibe() {
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-primary/20 text-primary-glow">
+        <div className="p-3 rounded-2xl bg-white/40 text-primary shadow-sm">
           <Music size={24} />
         </div>
         <div>
-          <h2 className="text-2xl font-semibold">The Stream</h2>
-          <p className="text-foreground/50 text-sm">Giai điệu trôi theo thời tiết.</p>
+          <h2 className="text-2xl font-serif font-bold">Dòng Cảm Xúc</h2>
+          <p className="text-foreground/70 text-sm">Giai điệu trôi theo thời tiết.</p>
         </div>
       </div>
 
-      <div className="relative rounded-2xl overflow-hidden aspect-video mb-6 block md:hidden lg:block border border-white/10 group">
+      <div className="relative rounded-[2rem] overflow-hidden aspect-video mb-6 block md:hidden lg:block border border-white/40 group shadow-sm bg-white/20">
         <img 
           src={currentVibe.animeArt} 
           alt="Aesthetic background" 
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 mix-blend-multiply"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#10061f] via-black/40 to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <h3 className="text-lg font-medium text-white mb-1">{currentVibe.weather}</h3>
-          <p className="text-white/80 text-sm">{currentVibe.desc}</p>
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-transparent to-transparent" />
+        <div className="absolute bottom-6 left-6 right-6">
+          <h3 className="text-lg font-serif font-bold text-foreground mb-1 drop-shadow-sm">{currentVibe.weather}</h3>
+          <p className="text-foreground/90 font-medium text-sm drop-shadow-sm">{currentVibe.desc}</p>
         </div>
       </div>
 
-      <div className="glass p-4 rounded-2xl flex items-center gap-4 relative overflow-hidden">
+      <div className="glass p-4 rounded-[2rem] flex items-center gap-4 relative overflow-hidden">
         {/* Progress Bar Background */}
-        <div className="absolute bottom-0 left-0 h-1 bg-white/5 w-full">
+        <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
           <motion.div 
             className="h-full bg-primary"
             initial={{ width: "0%" }}
@@ -92,24 +92,24 @@ export default function StreamVibe() {
         <img 
           src={currentVibe.cover} 
           alt="Album Cover" 
-          className="w-16 h-16 rounded-lg object-cover shadow-md"
+          className="w-16 h-16 rounded-2xl object-cover shadow-sm opacity-90"
         />
         
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium truncate text-foreground/90">{currentVibe.song}</h4>
-          <p className="text-sm text-foreground/50 truncate">{currentVibe.artist}</p>
+          <h4 className="font-serif font-bold truncate text-foreground">{currentVibe.song}</h4>
+          <p className="text-sm text-foreground/70 font-medium truncate">{currentVibe.artist}</p>
         </div>
 
-        <div className="flex items-center gap-2 pr-2">
+        <div className="flex items-center gap-2 pr-2 relative z-10">
           <button 
             onClick={() => setIsPlaying(!isPlaying)}
-            className="w-10 h-10 rounded-full bg-primary hover:bg-primary-glow flex items-center justify-center text-white transition-colors"
+            className="w-12 h-12 rounded-full bg-primary hover:bg-primary-glow flex items-center justify-center text-white transition-colors shadow-sm"
           >
             {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-1" />}
           </button>
           <button 
             onClick={handleShuffle}
-            className="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center text-foreground/70 transition-colors"
+            className="w-10 h-10 rounded-full hover:bg-white/40 flex items-center justify-center text-foreground transition-colors"
           >
             <SkipForward size={18} fill="currentColor" />
           </button>

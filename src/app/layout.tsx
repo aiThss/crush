@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
-import { Lexend } from "next/font/google";
+import { Playfair_Display, Quicksand, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
-const lexend = Lexend({
-  variable: "--font-lexend",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin", "vietnamese"],
+});
+
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin", "vietnamese"],
+});
+
+const dancing = Dancing_Script({
+  variable: "--font-dancing",
   subsets: ["latin", "vietnamese"],
 });
 
 export const metadata: Metadata = {
   title: "VibeHub",
-  description: "Trạm sạc năng lượng vũ trụ - Aesthetic personal portal",
+  description: "Trạm sạc năng lượng vũ trụ - Celestial Minimalist portal",
 };
 
 export default function RootLayout({
@@ -18,9 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="dark" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning>
       <body
-        className={`${lexend.variable} antialiased selection:bg-primary/30 selection:text-primary-glow min-h-screen`}
+        className={`${playfair.variable} ${quicksand.variable} ${dancing.variable} font-sans antialiased text-foreground bg-background min-h-screen`}
         suppressHydrationWarning
       >
         {children}

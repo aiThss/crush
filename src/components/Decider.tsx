@@ -31,12 +31,12 @@ export default function Decider() {
   return (
     <div className="flex flex-col">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-3 rounded-xl bg-accent/10 text-accent">
+        <div className="p-3 rounded-2xl bg-accent/30 text-foreground shadow-sm">
           <Dices size={24} />
         </div>
         <div>
-          <h2 className="text-2xl font-semibold">The Decider</h2>
-          <p className="text-foreground/50 text-sm">Chữa bệnh lười suy nghĩ.</p>
+          <h2 className="text-2xl font-serif font-bold">Trạm Quyết Định</h2>
+          <p className="text-foreground/70 text-sm">Chữa bệnh lười suy nghĩ.</p>
         </div>
       </div>
 
@@ -44,19 +44,19 @@ export default function Decider() {
         <button 
           onClick={() => handleRoll("food")}
           disabled={loading}
-          className="glass border border-accent/20 hover:border-accent/50 p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors group"
+          className="glass border border-white/40 hover:border-white/80 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 transition-colors group shadow-sm"
         >
-          <Utensils size={32} className="text-accent group-hover:scale-110 transition-transform" />
+          <Utensils size={32} className="text-foreground group-hover:scale-110 transition-transform" />
           <span className="font-medium text-foreground/80 group-hover:text-foreground">Hôm nay ăn gì?</span>
         </button>
 
         <button 
           onClick={() => handleRoll("activity")}
           disabled={loading}
-          className="glass border border-primary/20 hover:border-primary/50 p-6 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors group"
+          className="glass border border-white/40 hover:border-white/80 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 transition-colors group shadow-sm"
         >
           <PersonStanding size={32} className="text-primary group-hover:scale-110 transition-transform" />
-          <span className="font-medium text-foreground/80 group-hover:text-foreground">Hôm nay làm trò gì?</span>
+          <span className="font-medium text-foreground/80 group-hover:text-foreground">Hôm nay làm gì?</span>
         </button>
       </div>
 
@@ -67,12 +67,12 @@ export default function Decider() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="mt-8 p-8 rounded-2xl bg-surface-hover/80 border border-white/5 flex flex-col items-center justify-center text-center min-h-[160px]"
+            className="mt-8 p-8 rounded-[2rem] bg-surface-hover/80 border border-white/50 flex flex-col items-center justify-center text-center min-h-[160px] shadow-sm"
           >
             {loading ? (
-              <div className="flex flex-col items-center gap-4 text-foreground/60">
+              <div className="flex flex-col items-center gap-4 text-foreground/70">
                 <Loader2 className="animate-spin" size={28} />
-                <p className="text-sm">Vũ trụ đang bốc thăm...</p>
+                <p className="text-sm font-medium">Vũ trụ đang bốc thăm...</p>
               </div>
             ) : (
               <motion.div 
@@ -80,10 +80,10 @@ export default function Decider() {
                 animate={{ opacity: 1, y: 0 }}
                 className="flex flex-col items-center gap-2"
               >
-                <p className="text-sm text-foreground/50 uppercase tracking-widest mb-2">
+                <p className="text-sm text-foreground/60 uppercase tracking-widest mb-2 font-medium">
                   {typeClicked === "food" ? "Bạn nên ăn" : "Bạn nên"}
                 </p>
-                <h3 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent to-primary">
+                <h3 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
                   {result}
                 </h3>
               </motion.div>
