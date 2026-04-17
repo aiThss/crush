@@ -139,14 +139,14 @@ export default function Home() {
       <motion.div 
         animate={{ y: [0, -15, 0], rotate: [-8, -6, -8] }}
         transition={{ duration: 6, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="absolute top-32 left-4 md:left-12 font-script text-2xl md:text-3xl text-primary/60 opacity-80 z-0 pointer-events-none"
+        className="absolute top-32 left-4 md:left-12 font-script text-3xl md:text-4xl text-accent opacity-90 z-0 pointer-events-none drop-shadow-sm"
       >
         vũ trụ đang lắng nghe...
       </motion.div>
       <motion.div 
         animate={{ y: [0, -10, 0], rotate: [5, 7, 5] }}
         transition={{ duration: 7, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="absolute bottom-40 right-8 md:right-32 font-script text-2xl md:text-3xl text-accent/80 opacity-80 z-0 pointer-events-none"
+        className="absolute bottom-40 right-8 md:right-32 font-script text-3xl md:text-4xl text-accent opacity-90 z-0 pointer-events-none drop-shadow-sm"
       >
         kỷ niệm là báu vật
       </motion.div>
@@ -164,7 +164,7 @@ export default function Home() {
         <h1 className="text-5xl sm:text-7xl font-serif font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
           VibeHub.
         </h1>
-        <p className="text-foreground/70 max-w-lg text-sm sm:text-base leading-relaxed">
+        <p className="text-foreground/80 max-w-lg text-sm sm:text-base leading-relaxed">
           Nơi bạn trốn khỏi thế giới ồn ào. Dành chút không gian tĩnh lặng, lắng nghe một giai điệu dịu êm, hay để vũ trụ chỉ lối cho những bộn bề.
         </p>
       </motion.div>
@@ -182,7 +182,7 @@ export default function Home() {
              <motion.div 
               animate={{ y: [0, 8, 0], rotate: [-4, -2, -4] }}
               transition={{ duration: 5, repeat: Infinity, repeatType: "mirror" }}
-              className="absolute -top-6 -right-6 font-script text-2xl text-primary-glow/70 z-20 pointer-events-none"
+              className="absolute -top-6 -right-6 font-script text-3xl text-accent opacity-90 z-20 pointer-events-none drop-shadow-sm"
             >
                chút mộng mơ cho ngày dài
             </motion.div>
@@ -192,7 +192,7 @@ export default function Home() {
               </div>
               <div>
                 <h2 className="text-xl font-serif font-bold mb-2 group-hover:text-primary transition-colors">Dòng Cảm Xúc</h2>
-                <p className="text-foreground/70 text-sm">Trình phát Vibe. Cuốn theo từng nốt nhạc của bầu trời.</p>
+                <p className="text-foreground/80 text-sm">Trình phát Vibe. Cuốn theo từng nốt nhạc của bầu trời.</p>
               </div>
             </InteractiveCard>
           </div>
@@ -204,7 +204,7 @@ export default function Home() {
             </div>
             <div>
               <h2 className="text-xl font-serif font-bold mb-2 text-foreground group-hover:text-foreground/80 transition-colors">Trạm Quyết Định</h2>
-              <p className="text-foreground/70 text-sm">Hôm nay ăn gì, làm gì? Rối quá thì để đây random cho.</p>
+              <p className="text-foreground/80 text-sm">Hôm nay ăn gì, làm gì? Rối quá thì để đây random cho.</p>
             </div>
           </InteractiveCard>
 
@@ -215,7 +215,7 @@ export default function Home() {
             </div>
             <div>
               <h2 className="text-xl font-serif font-bold mb-2 group-hover:text-primary transition-colors">Cửa Sổ Vũ Trụ</h2>
-              <p className="text-foreground/70 text-sm">Xem tử vi AI. Lời khuyên êm ái cho tâm hồn xao động.</p>
+              <p className="text-foreground/80 text-sm">Xem tử vi AI. Lời khuyên êm ái cho tâm hồn xao động.</p>
             </div>
           </InteractiveCard>
         </motion.div>
