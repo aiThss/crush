@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Quicksand, Dancing_Script } from "next/font/google";
+import { Comfortaa, Quicksand, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const comfortaa = Comfortaa({
+  variable: "--font-comfortaa",
   subsets: ["latin", "vietnamese"],
 });
 
@@ -18,7 +18,7 @@ const dancing = Dancing_Script({
 });
 
 export const metadata: Metadata = {
-  title: "VibeHub",
+  title: "Tín hiệu từ vũ trụ",
   description: "Trạm sạc năng lượng vũ trụ - Celestial Minimalist portal",
 };
 
@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${quicksand.variable} ${dancing.variable} font-sans antialiased text-foreground bg-background min-h-screen`}
+        className={`${comfortaa.variable} ${quicksand.variable} ${dancing.variable} font-sans antialiased text-foreground bg-background min-h-screen`}
         suppressHydrationWarning
       >
         {children}

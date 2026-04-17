@@ -19,7 +19,7 @@
   --color-primary-glow: var(--primary-glow);
   --color-accent: var(--accent);
   
-  --font-serif: var(--font-playfair), serif;
+  --font-serif: var(--font-comfortaa), sans-serif;
   --font-sans: var(--font-quicksand), sans-serif;
   --font-script: var(--font-dancing), cursive;
   

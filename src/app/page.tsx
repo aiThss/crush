@@ -159,10 +159,10 @@ export default function Home() {
         className="w-full max-w-4xl flex flex-col items-center text-center z-10 pt-10 pb-16"
       >
         <span className="text-primary font-medium tracking-widest uppercase text-xs sm:text-sm mb-4">
-          Trạm sạc năng lượng vũ trụ
+          Nơi vũ trụ thì thầm với bạn
         </span>
-        <h1 className="text-5xl sm:text-7xl font-serif font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
-          VibeHub.
+        <h1 className="text-4xl sm:text-6xl font-serif font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
+          Tín hiệu từ vũ trụ
         </h1>
         <p className="text-foreground/80 max-w-lg text-sm sm:text-base leading-relaxed">
           Nơi bạn trốn khỏi thế giới ồn ào. Dành chút không gian tĩnh lặng, lắng nghe một giai điệu dịu êm, hay để vũ trụ chỉ lối cho những bộn bề.

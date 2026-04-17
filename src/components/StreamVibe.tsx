@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Music, SkipForward, ExternalLink, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { logMood } from "@/app/tracking-actions";
 
 type Mood = "buồn" | "vui" | "thư giãn" | "năng lượng" | "cô đơn" | null;
 
@@ -144,7 +145,10 @@ export default function StreamVibe() {
   useEffect(() => {
     if (mood) {
       const vibes = VIBES[mood];
-      setCurrentVibe(vibes[Math.floor(Math.random() * vibes.length)]);
+      const chosen = vibes[Math.floor(Math.random() * vibes.length)];
+      setCurrentVibe(chosen);
+      // Log mood selection to DB (fire and forget)
+      logMood(mood, chosen.song, chosen.artist);
     }
   }, [mood]);
 
