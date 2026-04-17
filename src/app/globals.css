@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f0eee9;
+  --background: #f5e0cf; /* Soft warm peach */
   --foreground: #688490;
   --surface: rgba(187, 208, 215, 0.4); 
   --surface-hover: rgba(183, 202, 207, 0.5); 
   --primary: #92aeb8; 
   --primary-glow: #a8bec7;
-  --accent: #f5e0cf; 
+  --accent: #f0eee9; /* Cream highlight */
 }
 
 @theme inline {
