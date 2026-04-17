@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Music, SkipForward, ExternalLink, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { logMood } from "@/app/tracking-actions";
+import { logActivity } from "@/app/tracking-actions";
+import { getSessionId, getDevice } from "@/lib/session";
 
 type Mood = "buồn" | "vui" | "thư giãn" | "năng lượng" | "cô đơn" | null;
 
@@ -22,7 +23,7 @@ const VIBES: Record<NonNullable<Mood>, {
   artist: string;
   cover: string;
   animeArt: string;
-  ytMusicId: string; // YouTube video ID for direct link
+  ytMusicId: string;
   youtubeId: string;
 }[]> = {
   buồn: [
@@ -147,8 +148,15 @@ export default function StreamVibe() {
       const vibes = VIBES[mood];
       const chosen = vibes[Math.floor(Math.random() * vibes.length)];
       setCurrentVibe(chosen);
-      // Log mood selection to DB (fire and forget)
-      logMood(mood, chosen.song, chosen.artist);
+      // Fire-and-forget logging
+      logActivity({
+        category: "music",
+        mood,
+        song: chosen.song,
+        artist: chosen.artist,
+        device: getDevice(),
+        sessionId: getSessionId(),
+      });
     }
   }, [mood]);
 
@@ -157,7 +165,16 @@ export default function StreamVibe() {
     const vibes = VIBES[mood];
     const others = vibes.filter(v => v.song !== currentVibe.song);
     const pool = others.length > 0 ? others : vibes;
-    setCurrentVibe(pool[Math.floor(Math.random() * pool.length)]);
+    const chosen = pool[Math.floor(Math.random() * pool.length)];
+    setCurrentVibe(chosen);
+    logActivity({
+      category: "music",
+      mood: mood + " (shuffle)",
+      song: chosen.song,
+      artist: chosen.artist,
+      device: getDevice(),
+      sessionId: getSessionId(),
+    });
   };
 
   const openYouTubeMusic = () => {
@@ -183,7 +200,6 @@ export default function StreamVibe() {
       </div>
 
       <AnimatePresence mode="wait">
-        {/* STEP 1: Mood selection */}
         {!mood ? (
           <motion.div
             key="mood-select"
@@ -209,7 +225,6 @@ export default function StreamVibe() {
             </div>
           </motion.div>
         ) : (
-          /* STEP 2: Vibe card */
           <motion.div
             key="vibe-card"
             initial={{ opacity: 0, y: 10 }}
@@ -224,7 +239,6 @@ export default function StreamVibe() {
               <ArrowLeft size={12} /> Đổi tâm trạng
             </button>
 
-            {/* Artwork */}
             <div className="relative rounded-[2rem] overflow-hidden aspect-video border border-white/40 group shadow-sm bg-white/20">
               <img
                 src={currentVibe.animeArt}
@@ -238,7 +252,6 @@ export default function StreamVibe() {
               </div>
             </div>
 
-            {/* Player bar */}
             <div className="glass p-4 rounded-[2rem] flex items-center gap-4 relative overflow-hidden">
               <div className="absolute bottom-0 left-0 h-1 bg-white/20 w-full">
                 <motion.div
@@ -248,30 +261,23 @@ export default function StreamVibe() {
                   transition={{ duration: 50, ease: "linear", repeat: Infinity }}
                 />
               </div>
-
               <img
                 src={currentVibe.cover}
                 alt="Album Cover"
                 className="w-16 h-16 rounded-2xl object-cover shadow-sm opacity-90 flex-shrink-0"
               />
-
               <div className="flex-1 min-w-0">
                 <h4 className="font-serif font-bold truncate text-foreground">{currentVibe.song}</h4>
                 <p className="text-sm text-foreground/70 font-medium truncate">{currentVibe.artist}</p>
               </div>
-
               <div className="flex items-center gap-2 pr-2 relative z-10 flex-shrink-0">
                 <button
                   onClick={() => setShowLaunchModal(true)}
                   className="w-12 h-12 rounded-full bg-primary hover:bg-primary-glow flex items-center justify-center text-white transition-colors shadow-sm text-base"
-                  title="Nghe bài này"
-                >
-                  ▶
-                </button>
+                >▶</button>
                 <button
                   onClick={handleShuffle}
                   className="w-10 h-10 rounded-full hover:bg-white/40 flex items-center justify-center text-foreground transition-colors"
-                  title="Đổi bài"
                 >
                   <SkipForward size={18} fill="currentColor" />
                 </button>
@@ -281,19 +287,15 @@ export default function StreamVibe() {
         )}
       </AnimatePresence>
 
-      {/* Launch Modal - rendered at component level, not inside overflow-hidden */}
+      {/* Launch Modal */}
       <AnimatePresence>
         {showLaunchModal && (
           <>
-            {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
               onClick={() => setShowLaunchModal(false)}
             />
-            {/* Modal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -307,11 +309,7 @@ export default function StreamVibe() {
                   <h3 className="font-serif font-bold text-xl text-foreground mt-1">{currentVibe.song}</h3>
                   <p className="text-sm text-foreground/60">{currentVibe.artist}</p>
                 </div>
-
-                <button
-                  onClick={openYouTubeMusic}
-                  className="w-full flex items-center gap-4 px-6 py-4 hover:bg-white/40 transition-colors border-b border-white/20"
-                >
+                <button onClick={openYouTubeMusic} className="w-full flex items-center gap-4 px-6 py-4 hover:bg-white/40 transition-colors border-b border-white/20">
                   <span className="text-2xl">🎵</span>
                   <div className="text-left">
                     <p className="font-bold text-foreground text-sm">YouTube Music</p>
@@ -319,11 +317,7 @@ export default function StreamVibe() {
                   </div>
                   <ExternalLink size={14} className="ml-auto text-foreground/30" />
                 </button>
-
-                <button
-                  onClick={openYouTube}
-                  className="w-full flex items-center gap-4 px-6 py-4 hover:bg-white/40 transition-colors"
-                >
+                <button onClick={openYouTube} className="w-full flex items-center gap-4 px-6 py-4 hover:bg-white/40 transition-colors">
                   <span className="text-2xl">▶️</span>
                   <div className="text-left">
                     <p className="font-bold text-foreground text-sm">YouTube</p>
@@ -331,12 +325,8 @@ export default function StreamVibe() {
                   </div>
                   <ExternalLink size={14} className="ml-auto text-foreground/30" />
                 </button>
-
                 <div className="p-4">
-                  <button
-                    onClick={() => setShowLaunchModal(false)}
-                    className="w-full py-2.5 rounded-2xl text-sm text-foreground/60 hover:text-foreground hover:bg-white/30 transition-colors font-medium"
-                  >
+                  <button onClick={() => setShowLaunchModal(false)} className="w-full py-2.5 rounded-2xl text-sm text-foreground/60 hover:text-foreground hover:bg-white/30 transition-colors font-medium">
                     Thôi, để sau
                   </button>
                 </div>
