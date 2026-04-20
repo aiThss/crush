@@ -2,17 +2,34 @@
 
 import { useState } from "react";
 import { Dices, Utensils, PersonStanding, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
-import { getRandomDecision } from "@/app/actions";
+import { FOODS, ACTIVITIES, type Region } from "@/data/foods";
 import { logActivity } from "@/app/tracking-actions";
 import { getSessionId, getDevice } from "@/lib/session";
 import { motion, AnimatePresence } from "framer-motion";
 
 type VoteState = "idle" | "liked" | "disliked";
+type RegionFilter = "all" | Region;
+
+const REGION_OPTIONS: { key: RegionFilter; label: string; emoji: string; count: number }[] = [
+  { key: "all",   label: "Tất cả",     emoji: "🌏", count: FOODS.length },
+  { key: "bac",   label: "Miền Bắc",   emoji: "🌿", count: FOODS.filter(f => f.region === "bac").length },
+  { key: "trung", label: "Miền Trung", emoji: "🌊", count: FOODS.filter(f => f.region === "trung").length },
+  { key: "nam",   label: "Miền Nam",   emoji: "🌴", count: FOODS.filter(f => f.region === "nam").length },
+];
+
+const REGION_LABEL: Record<RegionFilter, string> = {
+  all: "mọi miền",
+  bac: "Miền Bắc",
+  trung: "Miền Trung",
+  nam: "Miền Nam",
+};
 
 export default function Decider() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [resultDesc, setResultDesc] = useState<string | null>(null);
   const [typeClicked, setTypeClicked] = useState<"food" | "activity" | null>(null);
+  const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");
   const [voteState, setVoteState] = useState<VoteState>("idle");
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -20,13 +37,30 @@ export default function Decider() {
     setLoading(true);
     setTypeClicked(type);
     setResult(null);
+    setResultDesc(null);
     setVoteState("idle");
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const res = await getRandomDecision(type);
-    const item = res.success ? res.result! : "Oops, có lỗi gì đó rồi. Cậu tự quyết đi!";
-    setResult(item);
 
-    // Log the decider action
+    // Fake thinking delay for drama ✨
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    let item: string;
+    let desc: string | null = null;
+
+    if (type === "food") {
+      const pool = regionFilter === "all"
+        ? FOODS
+        : FOODS.filter(f => f.region === regionFilter);
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      item = picked.name;
+      desc = picked.desc;
+    } else {
+      item = ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)];
+    }
+
+    setResult(item);
+    setResultDesc(desc);
+
+    // Log action (fire-and-forget)
     logActivity({
       category: "decider",
       deciderItem: item,
@@ -68,7 +102,8 @@ export default function Decider() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center gap-3 mb-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
         <div className="p-3 rounded-2xl bg-white/40 text-primary shadow-sm">
           <Dices size={24} />
         </div>
@@ -78,19 +113,55 @@ export default function Decider() {
         </div>
       </div>
 
+      {/* Region Filter */}
+      <div className="mb-6">
+        <p className="text-xs text-foreground/45 uppercase tracking-widest font-medium mb-3">
+          🗺️ Chọn vùng miền
+        </p>
+        <div className="flex gap-2 flex-wrap">
+          {REGION_OPTIONS.map((r) => (
+            <button
+              key={r.key}
+              onClick={() => setRegionFilter(r.key)}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border shadow-sm ${
+                regionFilter === r.key
+                  ? "bg-primary/20 border-primary/50 text-primary"
+                  : "bg-white/30 border-white/40 text-foreground/60 hover:bg-white/50 hover:border-white/70 hover:text-foreground"
+              }`}
+            >
+              <span>{r.emoji}</span>
+              <span>{r.label}</span>
+              <span className={`text-xs rounded-full px-1.5 py-0.5 ml-0.5 ${
+                regionFilter === r.key ? "bg-primary/20 text-primary" : "bg-white/40 text-foreground/40"
+              }`}>
+                {r.count}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Roll Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button onClick={() => handleRoll("food")} disabled={loading}
-          className="glass border border-white/40 hover:border-white/80 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 transition-colors group shadow-sm">
+          className="glass border border-white/40 hover:border-white/80 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-2 transition-colors group shadow-sm">
           <Utensils size={32} className="text-foreground group-hover:scale-110 transition-transform" />
           <span className="font-medium text-foreground/80 group-hover:text-foreground">Hôm nay ăn gì?</span>
+          {regionFilter !== "all" && (
+            <span className="text-xs text-foreground/45 font-medium">
+              {REGION_LABEL[regionFilter]} · {REGION_OPTIONS.find(r => r.key === regionFilter)?.count} món
+            </span>
+          )}
         </button>
         <button onClick={() => handleRoll("activity")} disabled={loading}
-          className="glass border border-white/40 hover:border-white/80 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-3 transition-colors group shadow-sm">
+          className="glass border border-white/40 hover:border-white/80 p-6 rounded-[2rem] flex flex-col items-center justify-center gap-2 transition-colors group shadow-sm">
           <PersonStanding size={32} className="text-primary group-hover:scale-110 transition-transform" />
           <span className="font-medium text-foreground/80 group-hover:text-foreground">Hôm nay làm gì?</span>
+          <span className="text-xs text-foreground/45 font-medium">{ACTIVITIES.length} lựa chọn</span>
         </button>
       </div>
 
+      {/* Result Box */}
       <AnimatePresence mode="wait">
         {(loading || result) && (
           <motion.div key="result-box"
@@ -102,14 +173,25 @@ export default function Decider() {
                 <p className="text-sm font-medium">Vũ trụ đang bốc thăm...</p>
               </div>
             ) : (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-4 w-full">
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-3 w-full">
                 <p className="text-sm text-foreground/60 uppercase tracking-widest font-medium">
                   {typeClicked === "food" ? "Bạn nên ăn" : "Bạn nên"}
                 </p>
                 <h3 className="text-3xl md:text-4xl font-serif font-bold text-foreground">{result}</h3>
 
+                {/* Food description */}
+                {resultDesc && (
+                  <motion.p
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+                    className="text-sm text-foreground/55 italic max-w-xs leading-relaxed"
+                  >
+                    {resultDesc}
+                  </motion.p>
+                )}
+
+                {/* Vote buttons */}
                 {voteState === "idle" && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
                     className="flex items-center gap-3 mt-2 flex-wrap justify-center">
                     <p className="text-xs text-foreground/50">Nghe hợp lý không?</p>
                     <button onClick={handleLike}
@@ -149,8 +231,8 @@ export default function Decider() {
                 <h3 className="font-serif font-bold text-xl text-foreground">Tuyệt vời!</h3>
                 <p className="text-foreground/70 text-sm leading-relaxed">
                   {typeClicked === "food"
-                    ? <>Chúc bạn thưởng thức bữa ăn thật vui vẻ nhé 🌸<br /><span className="text-foreground/50 text-xs">Ăn ngon, sống khoẻ, vũ trụ yêu bạn!</span></>
-                    : <>Chúc bạn có một buổi thật vui và ý nghĩa 🌟<br /><span className="text-foreground/50 text-xs">Cứ thế mà làm, vũ trụ sẽ sắp xếp hết!</span></>}
+                    ? <><span>Chúc bạn thưởng thức bữa ăn thật vui vẻ nhé 🌸</span><br /><span className="text-foreground/50 text-xs">Ăn ngon, sống khoẻ, vũ trụ yêu bạn!</span></>
+                    : <><span>Chúc bạn có một buổi thật vui và ý nghĩa 🌟</span><br /><span className="text-foreground/50 text-xs">Cứ thế mà làm, vũ trụ sẽ sắp xếp hết!</span></>}
                 </p>
                 <button onClick={() => setShowCelebration(false)}
                   className="mt-2 px-6 py-2 bg-primary hover:bg-primary-glow text-white rounded-full text-sm font-medium transition-colors shadow-sm">

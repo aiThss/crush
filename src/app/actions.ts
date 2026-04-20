@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { GoogleGenAI } from "@google/genai";
 import connectDB from "@/lib/mongodb";
-import { HoroscopeLog, RateLimit, DeciderItem } from "@/lib/models";
+import { HoroscopeLog, RateLimit } from "@/lib/models";
 
 const getClientIp = async () => {
   const forwardedFor = (await headers()).get("x-forwarded-for");
@@ -88,29 +88,3 @@ export async function getCosmicGuidance(name: string, birthdate: string) {
   }
 }
 
-export async function getRandomDecision(type: "food" | "activity") {
-  try {
-    await connectDB();
-    const items = await DeciderItem.find({ type });
-    if (items.length === 0) {
-      // Seed default data for the requested type only
-      const defaultFoods = ["Phở Gà", "Bò Né", "Cơm Tấm", "Sushi", "Bún Đậu Mắm Tôm", "Bánh Mì Huynh Hoa", "Salad Ức Gà (healthy xíu)", "Lẩu Thái"];
-      const defaultActivities = ["Chạy bộ đón gió", "Cày nốt series Netflix", "Ngủ nướng", "Đi dạo chill chill lúc ráng chiều", "Nghe trọn một album của Lana Del Rey", "Đọc vài trang sách mỏ hỗn"];
-
-      const seedData = (type === "food" ? defaultFoods : defaultActivities)
-        .map(name => ({ name, type }));
-
-      await DeciderItem.insertMany(seedData);
-
-      const newItems = await DeciderItem.find({ type });
-      const randomIndex = Math.floor(Math.random() * newItems.length);
-      return { success: true, result: newItems[randomIndex].name };
-    }
-
-    const randomIndex = Math.floor(Math.random() * items.length);
-    return { success: true, result: items[randomIndex].name };
-  } catch (error: any) {
-    console.error("Random Decision Error:", error);
-    return { success: false, error: "Không thể kết nối với The Decider. 😢" };
-  }
-}
