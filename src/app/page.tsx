@@ -8,6 +8,7 @@ import StreamVibe from "@/components/StreamVibe";
 import Decider from "@/components/Decider";
 import { logActivity } from "@/app/tracking-actions";
 import { getSessionId, getDevice } from "@/lib/session";
+import { getFoodsDB } from "@/app/admin/actions";
 
 type Tab = "stream" | "decider" | "cosmic" | null;
 
@@ -61,6 +62,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>(null);
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
+  const [foods, setFoods] = useState<any[]>([]);
 
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
@@ -72,6 +74,11 @@ export default function Home() {
     setIsMobile(window.innerWidth < 768);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', checkMobile);
+
+    // Fetch initial data
+    getFoodsDB().then(res => {
+      if (res.success) setFoods(res.data);
+    });
 
     // Log page visit
     logActivity({
@@ -218,7 +225,7 @@ export default function Home() {
                 <X size={20} className="text-foreground/80" />
               </button>
               {activeTab === "stream" && <StreamVibe />}
-              {activeTab === "decider" && <Decider />}
+              {activeTab === "decider" && <Decider initialFoods={foods} />}
               {activeTab === "cosmic" && <CosmicGuide />}
             </div>
           </motion.div>

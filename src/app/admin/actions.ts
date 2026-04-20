@@ -1,111 +1,136 @@
 "use server";
 
 import dbConnect from "@/lib/mongodb";
-import { ActivityLog } from "@/lib/models";
+import { ActivityLog, FoodItem } from "@/lib/models";
+import { FOODS } from "@/data/foods"; // used for seeding
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
-function checkPwd(password: string) {
-  if (password !== ADMIN_PASSWORD) throw new Error("Sai mật khẩu rồi bạn ơi 🌙");
+function checkAuth(password: string) {
+  if (password !== ADMIN_PASSWORD) throw new Error("Sai mật khẩu");
 }
 
-// ─── Frame 1: System Overview ─────────────────────────────────────────────────
-export async function fetchSystemFrame(password: string) {
+export async function fetchDashboard(password: string) {
   try {
-    checkPwd(password);
+    checkAuth(password);
     await dbConnect();
 
-    const [totalVisits, totalSessions, deviceAgg, logs] = await Promise.all([
+    const [logs, totalVisits, totalCosmic, totalFoods] = await Promise.all([
+      ActivityLog.find().sort({ timestamp: -1 }).limit(300).lean(),
       ActivityLog.countDocuments({ category: "page_visit" }),
-      ActivityLog.distinct("sessionId"),
-      ActivityLog.aggregate([
-        { $match: { device: { $in: ["mobile", "desktop"] } } },
-        { $group: { _id: "$device", count: { $sum: 1 } } },
-      ]),
-      ActivityLog.find({ category: "page_visit" })
-        .sort({ timestamp: -1 }).limit(100).lean(),
+      ActivityLog.countDocuments({ category: "cosmic" }),
+      FoodItem.countDocuments(),
     ]);
 
-    const deviceMap: Record<string, number> = { mobile: 0, desktop: 0 };
-    for (const d of deviceAgg) deviceMap[d._id as string] = d.count;
+    // Most selected mood
+    const moodAgg = await ActivityLog.aggregate([
+      { $match: { category: "music", mood: { $ne: null } } },
+      { $group: { _id: "$mood", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 1 },
+    ]);
+    const topMood = moodAgg[0] ? `${moodAgg[0]._id} (${moodAgg[0].count} lần)` : "Chưa có";
+
+    // Most picked food
+    const foodAgg = await ActivityLog.aggregate([
+      { $match: { category: "decider", deciderType: "food" } },
+      { $group: { _id: "$deciderItem", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 1 },
+    ]);
+    const topFood = foodAgg[0] ? `${foodAgg[0]._id} (${foodAgg[0].count}x)` : "Chưa có";
 
     return {
       success: true,
+      logs: JSON.parse(JSON.stringify(logs)),
       stats: {
         totalVisits,
-        uniqueSessions: totalSessions.length,
-        mobileCount: deviceMap.mobile,
-        desktopCount: deviceMap.desktop,
+        totalCosmic,
+        topMood,
+        topFood,
+        totalLogs: logs.length,
+        totalFoods,
       },
-      logs: JSON.parse(JSON.stringify(logs)),
     };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+  } catch (error: any) {
+    return { success: false, error: error.message || "Lỗi kết nối database." };
   }
 }
 
-// ─── Frame 2: Decider Management ─────────────────────────────────────────────
-export async function fetchDeciderFrame(password: string) {
+// ─── Foods CRUD ─────────────────────────────────────────────────────────────
+
+export async function getFoodsDB() {
   try {
-    checkPwd(password);
     await dbConnect();
-
-    const [logs, topFoodsAgg, topActivitiesAgg, likeAgg, dislikeAgg] = await Promise.all([
-      ActivityLog.find({ category: { $in: ["decider", "decider_vote"] } })
-        .sort({ timestamp: -1 }).limit(200).lean(),
-      ActivityLog.aggregate([
-        { $match: { category: "decider", deciderType: "food" } },
-        { $group: { _id: "$deciderItem", count: { $sum: 1 } } },
-        { $sort: { count: -1 } }, { $limit: 10 },
-      ]),
-      ActivityLog.aggregate([
-        { $match: { category: "decider", deciderType: "activity" } },
-        { $group: { _id: "$deciderItem", count: { $sum: 1 } } },
-        { $sort: { count: -1 } }, { $limit: 5 },
-      ]),
-      ActivityLog.countDocuments({ category: "decider_vote", vote: "like" }),
-      ActivityLog.countDocuments({ category: "decider_vote", vote: "dislike" }),
-    ]);
-
-    return {
-      success: true,
-      stats: { likeCount: likeAgg, dislikeCount: dislikeAgg },
-      topFoods: topFoodsAgg,
-      topActivities: topActivitiesAgg,
-      logs: JSON.parse(JSON.stringify(logs)),
-    };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+    let foods = await FoodItem.find().lean();
+    
+    // Auto-seed if empty
+    if (foods.length === 0) {
+      await FoodItem.insertMany(FOODS);
+      foods = await FoodItem.find().lean();
+    }
+    return { success: true, data: JSON.parse(JSON.stringify(foods)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }
 
-// ─── Frame 3: Cosmic / AI Logs ────────────────────────────────────────────────
-export async function fetchCosmicFrame(password: string) {
+export async function addFoodDB(password: string, data: any) {
   try {
-    checkPwd(password);
+    checkAuth(password);
     await dbConnect();
-
-    const [logs, total] = await Promise.all([
-      ActivityLog.find({ category: "cosmic" })
-        .sort({ timestamp: -1 }).limit(100).lean(),
-      ActivityLog.countDocuments({ category: "cosmic" }),
-    ]);
-
-    return {
-      success: true,
-      stats: { total },
-      logs: JSON.parse(JSON.stringify(logs)),
-    };
-  } catch (e: any) {
-    return { success: false, error: e.message };
+    const newFood = await FoodItem.create(data);
+    return { success: true, data: JSON.parse(JSON.stringify(newFood)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }
 
-// ─── Pin/Unpin cosmic log ─────────────────────────────────────────────────────
-// We store pins in localStorage on client (no extra DB field needed)
+export async function updateFoodDB(password: string, id: string, data: any) {
+  try {
+    checkAuth(password);
+    await dbConnect();
+    const updated = await FoodItem.findByIdAndUpdate(id, data, { new: true }).lean();
+    return { success: true, data: JSON.parse(JSON.stringify(updated)) };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
 
-// ─── Auth check ───────────────────────────────────────────────────────────────
-export async function verifyPassword(password: string) {
-  if (password !== ADMIN_PASSWORD) return { success: false, error: "Sai mật khẩu rồi bạn ơi 🌙" };
-  return { success: true };
+export async function deleteFoodDB(password: string, id: string) {
+  try {
+    checkAuth(password);
+    await dbConnect();
+    await FoodItem.findByIdAndDelete(id);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function importFoodsDB(password: string, jsonString: string) {
+  try {
+    checkAuth(password);
+    const parsed = JSON.parse(jsonString);
+    if (!Array.isArray(parsed)) throw new Error("JSON phải là một mảng []");
+    
+    await dbConnect();
+    await FoodItem.insertMany(parsed);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ─── Cosmic Log Pinning ─────────────────────────────────────────────────────
+
+export async function togglePinLog(password: string, logId: string, currentPinStatus: boolean) {
+  try {
+    checkAuth(password);
+    await dbConnect();
+    await ActivityLog.findByIdAndUpdate(logId, { pinned: !currentPinStatus });
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
 }

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Dices, Utensils, PersonStanding, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
-import { FOODS, ACTIVITIES, FOOD_GROUP_META, type Region } from "@/data/foods";
+import { ACTIVITIES, FOOD_GROUP_META, type Region, type FoodItem } from "@/data/foods";
 import { logActivity } from "@/app/tracking-actions";
 import { getSessionId, getDevice } from "@/lib/session";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,32 +14,39 @@ type RegionFilter = "all" | Region;
 const DISLIKE_THRESHOLD = 3; // dislikes within a group before switching to next group
 
 // ─── Region selector data ─────────────────────────────────────────────────────
-const REGION_OPTIONS: { key: RegionFilter; label: string; emoji: string; count: number }[] = [
-  { key: "all",   label: "Tất cả",     emoji: "🌏", count: FOODS.length },
-  { key: "bac",   label: "Miền Bắc",   emoji: "🌿", count: FOODS.filter(f => f.region === "bac").length },
-  { key: "trung", label: "Miền Trung", emoji: "🌊", count: FOODS.filter(f => f.region === "trung").length },
-  { key: "nam",   label: "Miền Nam",   emoji: "🌴", count: FOODS.filter(f => f.region === "nam").length },
-];
+// ─── Region selector helper ──────────────────────────────────────────────────
+function getRegionCount(foods: any[], region: string) {
+  return foods.filter(f => f.region === region).length;
+}
 
 const REGION_LABEL: Record<RegionFilter, string> = {
   all: "mọi miền", bac: "Miền Bắc", trung: "Miền Trung", nam: "Miền Nam",
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getGroupsForRegion(region: RegionFilter): string[] {
-  const pool = region === "all" ? FOODS : FOODS.filter(f => f.region === region);
+function getGroupsForRegion(foods: any[], region: RegionFilter): string[] {
+  const pool = region === "all" ? foods : foods.filter(f => f.region === region);
   return [...new Set(pool.map(f => f.group))];
 }
 
-function pickNewGroup(region: RegionFilter, exhausted: string[]): string {
-  const all = getGroupsForRegion(region);
+function pickNewGroup(foods: any[], region: RegionFilter, exhausted: string[]): string {
+  const all = getGroupsForRegion(foods, region);
   const available = all.filter(g => !exhausted.includes(g));
   const pool = available.length > 0 ? available : all; // reset if all exhausted
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
-export default function Decider() {
+export default function Decider({ initialFoods = [] }: { initialFoods?: any[] }) {
+  const foods = initialFoods.length > 0 ? initialFoods : [];
+  
+  const REGION_OPTIONS: { key: RegionFilter; label: string; emoji: string; count: number }[] = [
+    { key: "all",   label: "Tất cả",     emoji: "🌏", count: foods.length },
+    { key: "bac",   label: "Miền Bắc",   emoji: "🌿", count: getRegionCount(foods, "bac") },
+    { key: "trung", label: "Miền Trung", emoji: "🌊", count: getRegionCount(foods, "trung") },
+    { key: "nam",   label: "Miền Nam",   emoji: "🌴", count: getRegionCount(foods, "nam") },
+  ];
+
   const [loading, setLoading]                 = useState(false);
   const [result, setResult]                   = useState<string | null>(null);
   const [resultDesc, setResultDesc]           = useState<string | null>(null);
@@ -85,13 +92,13 @@ export default function Decider() {
 
     if (type === "food") {
       const pool = regionFilter === "all"
-        ? FOODS
-        : FOODS.filter(f => f.region === regionFilter);
+        ? foods
+        : foods.filter(f => f.region === regionFilter);
 
       // ── Pick / maintain active group ───────────────────────────────────────
       let group = activeGroupRef.current;
       if (!group) {
-        group = pickNewGroup(regionFilter, exhaustedGroupsRef.current);
+        group = pickNewGroup(foods, regionFilter, exhaustedGroupsRef.current);
         activeGroupRef.current  = group;
         groupDislikeRef.current = 0;
       }
@@ -167,7 +174,7 @@ export default function Decider() {
         if (activeGroupRef.current) {
           exhaustedGroupsRef.current = [...exhaustedGroupsRef.current, activeGroupRef.current];
           // If all groups exhausted, reset exhausted list
-          const totalGroups = getGroupsForRegion(regionFilter).length;
+          const totalGroups = getGroupsForRegion(foods, regionFilter).length;
           if (exhaustedGroupsRef.current.length >= totalGroups) {
             exhaustedGroupsRef.current = [];
           }

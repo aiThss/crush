@@ -27,6 +27,9 @@ const ActivityLogSchema = new mongoose.Schema(
     userName: { type: String, default: null },
     birthdate: { type: String, default: null },
     horoscopeResult: { type: String, default: null },
+    
+    // Admin toggles
+    pinned: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -60,6 +63,17 @@ const DeciderItemSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const FoodItemSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    region: { type: String, required: true, enum: ["bac", "trung", "nam"] },
+    category: { type: String, required: true, enum: ["an-chinh", "an-vat"] },
+    group: { type: String, required: true },
+    desc: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+
 export const ActivityLog =
   mongoose.models.ActivityLog || mongoose.model("ActivityLog", ActivityLogSchema);
 
@@ -71,3 +85,6 @@ export const RateLimit =
 
 export const DeciderItem =
   mongoose.models.DeciderItem || mongoose.model("DeciderItem", DeciderItemSchema);
+
+export const FoodItem =
+  mongoose.models.FoodItem || mongoose.model("FoodItem", FoodItemSchema);
