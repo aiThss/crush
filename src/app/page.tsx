@@ -127,14 +127,14 @@ export default function Home() {
       <motion.div
         animate={{ y: [0, -15, 0], rotate: [-8, -6, -8] }}
         transition={{ duration: 6, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="absolute top-32 left-4 md:left-12 font-script font-bold text-3xl md:text-4xl text-accent opacity-100 z-0 pointer-events-none drop-shadow-md"
+        className="absolute top-24 md:top-32 left-0 md:left-12 font-script font-bold text-3xl md:text-4xl text-accent opacity-20 sm:opacity-50 z-[-1] pointer-events-none drop-shadow-sm w-full text-center md:text-left md:w-auto"
       >
         vũ trụ đang lắng nghe...
       </motion.div>
       <motion.div
         animate={{ y: [0, -10, 0], rotate: [5, 7, 5] }}
         transition={{ duration: 7, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-        className="absolute bottom-40 right-8 md:right-32 font-script font-bold text-3xl md:text-4xl text-accent opacity-100 z-0 pointer-events-none drop-shadow-md"
+        className="absolute bottom-40 right-8 md:right-32 font-script font-bold text-3xl md:text-4xl text-accent opacity-30 sm:opacity-60 z-[-1] pointer-events-none drop-shadow-sm"
       >
         kỷ niệm là báu vật
       </motion.div>
@@ -148,7 +148,7 @@ export default function Home() {
         <span className="text-primary font-medium tracking-widest uppercase text-xs sm:text-sm mb-4">
           Nơi vũ trụ quyết định thay bạn
         </span>
-        <h1 style={{ fontFamily: "var(--font-roboto-mono), monospace" }} className="text-4xl sm:text-6xl font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
+        <h1 style={{ fontFamily: "var(--font-lora), serif" }} className="text-5xl sm:text-7xl font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
           Tín hiệu từ vũ trụ
         </h1>
         <p className="text-foreground/80 max-w-lg text-sm sm:text-base leading-relaxed">
