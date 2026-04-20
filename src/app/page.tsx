@@ -139,13 +139,13 @@ export default function Home() {
         className="w-full max-w-4xl flex flex-col items-center text-center z-10 pt-10 pb-16"
       >
         <span className="text-primary font-medium tracking-widest uppercase text-xs sm:text-sm mb-4">
-          Nơi vũ trụ thì thầm với bạn
+          Nơi vũ trụ quyết định thay bạn
         </span>
         <h1 className="text-4xl sm:text-6xl font-serif font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
           Tín hiệu từ vũ trụ
         </h1>
         <p className="text-foreground/80 max-w-lg text-sm sm:text-base leading-relaxed">
-          Nơi bạn trốn khỏi thế giới ồn ào. Dành chút không gian tĩnh lặng, lắng nghe một giai điệu dịu êm, hay để vũ trụ chỉ lối cho những bộn bề.
+          Nếu chưa quyết định được, thì để tôi!!!
         </p>
       </motion.div>
 
@@ -170,7 +170,7 @@ export default function Home() {
               </div>
               <div>
                 <h2 className="text-xl font-serif font-bold mb-2 group-hover:text-primary transition-colors">Dòng Cảm Xúc</h2>
-                <p className="text-foreground/80 text-sm">Trình phát Vibe. Cuốn theo từng nốt nhạc của bầu trời.</p>
+                <p className="text-foreground/80 text-sm">Trình phát Random. Mỗi ngày một bản nhạc.</p>
               </div>
             </InteractiveCard>
           </div>
@@ -193,7 +193,7 @@ export default function Home() {
             </div>
             <div>
               <h2 className="text-xl font-serif font-bold mb-2 group-hover:text-primary transition-colors">Cửa Sổ Vũ Trụ</h2>
-              <p className="text-foreground/80 text-sm">Xem tử vi AI. Lời khuyên êm ái cho tâm hồn xao động.</p>
+              <p className="text-foreground/80 text-sm">Tử vi hôm nay. Để mình luận quẻ một chút nếu bạn đang có thắc mắc nhé!</p>
             </div>
           </InteractiveCard>
         </motion.div>

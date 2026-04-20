@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dices, Utensils, PersonStanding, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
 import { FOODS, ACTIVITIES, type Region } from "@/data/foods";
 import { logActivity } from "@/app/tracking-actions";
@@ -33,6 +33,10 @@ export default function Decider() {
   const [voteState, setVoteState] = useState<VoteState>("idle");
   const [showCelebration, setShowCelebration] = useState(false);
 
+  // Track recent picks to avoid repetition
+  const recentFood = useRef<string[]>([]);
+  const recentActivity = useRef<string[]>([]);
+
   const handleRoll = async (type: "food" | "activity") => {
     setLoading(true);
     setTypeClicked(type);
@@ -50,11 +54,26 @@ export default function Decider() {
       const pool = regionFilter === "all"
         ? FOODS
         : FOODS.filter(f => f.region === regionFilter);
-      const picked = pool[Math.floor(Math.random() * pool.length)];
+
+      // Exclude recently picked items (up to 1/3 of pool size)
+      const excludeCount = Math.max(1, Math.floor(pool.length / 3));
+      const recent = recentFood.current.slice(-excludeCount);
+      const available = pool.filter(f => !recent.includes(f.name));
+      const finalPool = available.length > 0 ? available : pool;
+
+      const picked = finalPool[Math.floor(Math.random() * finalPool.length)];
+      recentFood.current = [...recentFood.current, picked.name].slice(-Math.max(10, excludeCount));
       item = picked.name;
       desc = picked.desc;
     } else {
-      item = ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)];
+      // Exclude recently picked activities (up to 1/3 of list)
+      const excludeCount = Math.max(1, Math.floor(ACTIVITIES.length / 3));
+      const recent = recentActivity.current.slice(-excludeCount);
+      const available = ACTIVITIES.filter(a => !recent.includes(a));
+      const finalPool = available.length > 0 ? available : ACTIVITIES;
+
+      item = finalPool[Math.floor(Math.random() * finalPool.length)];
+      recentActivity.current = [...recentActivity.current, item].slice(-Math.max(8, excludeCount));
     }
 
     setResult(item);

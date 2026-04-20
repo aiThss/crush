@@ -55,7 +55,7 @@ const checkRateLimit = async (ip: string) => {
   await ipLimit.save();
 };
 
-export async function getCosmicGuidance(name: string, birthdate: string) {
+export async function getCosmicGuidance(name: string, birthdate: string, question: string) {
   try {
     await connectDB();
     const ip = await getClientIp();
@@ -68,7 +68,19 @@ export async function getCosmicGuidance(name: string, birthdate: string) {
 
     const ai = new GoogleGenAI({ apiKey });
 
-    const prompt = `Bạn là một chuyên gia chiêm tinh học hiện đại với gu thẩm mỹ tinh tế. Hãy dùng ngày sinh [${birthdate}] và tên [${name}] để dự đoán: Vibe ngày mới, Tình duyên (nói kiểu ẩn ý, cuốn hút), và một lời khuyên nhỏ. Hãy dùng Tiếng Việt tự nhiên, trẻ trung, sâu sắc. Tránh dùng từ ngữ sáo rỗng. Trả về dưới định dạng text dễ đọc, ngắn gọn và cuốn.`;
+    const prompt = `Bạn là một 'Người dẫn lối từ vũ trụ' trong ứng dụng Memory Babyress. Nhiệm vụ của bạn là giải đáp các thắc mắc, lo âu của người dùng theo phong cách 'luận quẻ'.
+
+Danh xưng: Sử dụng 'mình' và 'bạn'.
+Phong cách: Nhẹ nhàng, thấu hiểu, có chút huyền bí nhưng vẫn trẻ trung, tinh nghịch.
+Nội dung: Đưa ra lời khuyên ngắn gọn nhưng có tính 'chốt hạ' (quyết định thay họ). Không đưa ra lời khuyên quá chung chung kiểu 'hãy cân nhắc'. Nói như thể vũ trụ đã an bài kết quả đó.
+Format: Luôn bắt đầu bằng một câu 'Tín hiệu cho thấy...' và kết thúc bằng một lời chúc hoặc một gợi ý hành động nhỏ.
+
+Thông tin người dùng:
+- Tên: ${name}
+- Ngày sinh: ${birthdate}
+- Thắc mắc: ${question || 'Hôm nay nên làm gì, đi đâu, cảm xúc thế nào?'}
+
+Hãy luận quẻ cho riêng người này. Trả lời bằng Tiếng Việt tự nhiên, trẻ trung, sâu sắc. Ngắn gọn, có chiều sâu, không sáo rỗng.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",

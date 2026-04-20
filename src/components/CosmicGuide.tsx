@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 export default function CosmicGuide() {
   const [name, setName] = useState("");
   const [birthdate, setBirthdate] = useState("");
+  const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export default function CosmicGuide() {
     setResult(null);
     setError(null);
 
-    const res = await getCosmicGuidance(name, birthdate);
+    const res = await getCosmicGuidance(name, birthdate, question);
 
     if (res.success) {
       setResult(res.text!);
@@ -30,7 +31,7 @@ export default function CosmicGuide() {
         category: "cosmic",
         userName: name,
         birthdate,
-        horoscopeResult: res.text!.slice(0, 200), // lưu 200 ký tự đầu
+        horoscopeResult: res.text!.slice(0, 200),
         device: getDevice(),
         sessionId: getSessionId(),
       });
@@ -48,7 +49,7 @@ export default function CosmicGuide() {
         </div>
         <div>
           <h2 className="text-2xl font-serif font-bold">Cửa Sổ Vũ Trụ</h2>
-          <p className="text-foreground/70 text-sm">Vũ trụ có vài lời thủ thỉ với cậu.</p>
+          <p className="text-foreground/70 text-sm">Để mình luận quẻ cho cậu nhé.</p>
         </div>
       </div>
 
@@ -60,6 +61,7 @@ export default function CosmicGuide() {
         </div>
       ) : !result && !error ? (
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-4">
+          {/* Tên */}
           <div className="flex flex-col gap-2">
             <label className="text-sm text-foreground/80 font-medium ml-1">Tên của cậu là gì?</label>
             <input
@@ -69,6 +71,8 @@ export default function CosmicGuide() {
               required
             />
           </div>
+
+          {/* Ngày sinh */}
           <div className="flex flex-col gap-2">
             <label className="text-sm text-foreground/80 font-medium ml-1">Cậu đến Trái Đất ngày nào?</label>
             <input
@@ -77,10 +81,24 @@ export default function CosmicGuide() {
               required
             />
           </div>
+
+          {/* Thắc mắc — optional */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm text-foreground/80 font-medium ml-1">
+              Cậu đang thắc mắc điều gì? <span className="text-foreground/40 font-normal">(không bắt buộc)</span>
+            </label>
+            <textarea
+              value={question} onChange={(e) => setQuestion(e.target.value)}
+              placeholder="VD: Tuần này mình có nên thay đổi gì không? Hay hỏi về tình duyên, công việc..."
+              rows={3}
+              className="w-full bg-white/30 border border-white/50 rounded-2xl px-4 py-3 placeholder-foreground/40 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm resize-none text-sm"
+            />
+          </div>
+
           <button type="submit" disabled={!name || !birthdate}
-            className="mt-4 w-full bg-primary hover:bg-primary-glow text-white font-medium py-3.5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm">
+            className="mt-2 w-full bg-primary hover:bg-primary-glow text-white font-medium py-3.5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm">
             <Sparkles size={20} />
-            Rút quẻ hôm nay
+            Luận quẻ hôm nay
           </button>
         </form>
       ) : (
@@ -93,9 +111,9 @@ export default function CosmicGuide() {
               {result}
             </div>
           )}
-          <button onClick={() => { setResult(null); setError(null); }}
+          <button onClick={() => { setResult(null); setError(null); setQuestion(""); }}
             className="mt-8 text-sm text-primary hover:text-primary-glow font-bold underline underline-offset-4 transition-colors">
-            Thử một quẻ khác
+            Hỏi một điều khác
           </button>
         </motion.div>
       )}
