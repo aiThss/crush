@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Dices, Utensils, PersonStanding, Loader2, ThumbsUp, ThumbsDown } from "lucide-react";
-import { FOODS, ACTIVITIES, type Region } from "@/data/foods";
+import { FOODS, ACTIVITIES, FOOD_GROUP_META, type Region } from "@/data/foods";
 import { logActivity } from "@/app/tracking-actions";
 import { getSessionId, getDevice } from "@/lib/session";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +10,10 @@ import { motion, AnimatePresence } from "framer-motion";
 type VoteState = "idle" | "liked" | "disliked";
 type RegionFilter = "all" | Region;
 
+// ─── Config ───────────────────────────────────────────────────────────────────
+const DISLIKE_THRESHOLD = 3; // dislikes within a group before switching to next group
+
+// ─── Region selector data ─────────────────────────────────────────────────────
 const REGION_OPTIONS: { key: RegionFilter; label: string; emoji: string; count: number }[] = [
   { key: "all",   label: "Tất cả",     emoji: "🌏", count: FOODS.length },
   { key: "bac",   label: "Miền Bắc",   emoji: "🌿", count: FOODS.filter(f => f.region === "bac").length },
@@ -18,25 +22,55 @@ const REGION_OPTIONS: { key: RegionFilter; label: string; emoji: string; count: 
 ];
 
 const REGION_LABEL: Record<RegionFilter, string> = {
-  all: "mọi miền",
-  bac: "Miền Bắc",
-  trung: "Miền Trung",
-  nam: "Miền Nam",
+  all: "mọi miền", bac: "Miền Bắc", trung: "Miền Trung", nam: "Miền Nam",
 };
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getGroupsForRegion(region: RegionFilter): string[] {
+  const pool = region === "all" ? FOODS : FOODS.filter(f => f.region === region);
+  return [...new Set(pool.map(f => f.group))];
+}
+
+function pickNewGroup(region: RegionFilter, exhausted: string[]): string {
+  const all = getGroupsForRegion(region);
+  const available = all.filter(g => !exhausted.includes(g));
+  const pool = available.length > 0 ? available : all; // reset if all exhausted
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function Decider() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
-  const [resultDesc, setResultDesc] = useState<string | null>(null);
-  const [typeClicked, setTypeClicked] = useState<"food" | "activity" | null>(null);
-  const [regionFilter, setRegionFilter] = useState<RegionFilter>("all");
-  const [voteState, setVoteState] = useState<VoteState>("idle");
+  const [loading, setLoading]                 = useState(false);
+  const [result, setResult]                   = useState<string | null>(null);
+  const [resultDesc, setResultDesc]           = useState<string | null>(null);
+  const [typeClicked, setTypeClicked]         = useState<"food" | "activity" | null>(null);
+  const [regionFilter, setRegionFilter]       = useState<RegionFilter>("all");
+  const [voteState, setVoteState]             = useState<VoteState>("idle");
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Track recent picks to avoid repetition
-  const recentFood = useRef<string[]>([]);
+  // Group-switch state (refs — updated synchronously so handleDislike → handleRoll works)
+  const activeGroupRef      = useRef<string | null>(null);
+  const groupDislikeRef     = useRef(0);
+  const exhaustedGroupsRef  = useRef<string[]>([]);
+
+  // Display-only state for group indicator
+  const [groupLabel, setGroupLabel]     = useState<string | null>(null);
+  const [groupDislikeCount, setGroupDislikeCount] = useState(0);
+
+  // Per-type anti-repeat history
+  const recentFood     = useRef<string[]>([]);
   const recentActivity = useRef<string[]>([]);
 
+  // ── Reset all group state (on region change) ───────────────────────────────
+  const resetGroups = () => {
+    activeGroupRef.current     = null;
+    groupDislikeRef.current    = 0;
+    exhaustedGroupsRef.current = [];
+    setGroupLabel(null);
+    setGroupDislikeCount(0);
+  };
+
+  // ── Main roll handler ──────────────────────────────────────────────────────
   const handleRoll = async (type: "food" | "activity") => {
     setLoading(true);
     setTypeClicked(type);
@@ -44,8 +78,7 @@ export default function Decider() {
     setResultDesc(null);
     setVoteState("idle");
 
-    // Fake thinking delay for drama ✨
-    await new Promise(resolve => setTimeout(resolve, 700));
+    await new Promise(resolve => setTimeout(resolve, 650));
 
     let item: string;
     let desc: string | null = null;
@@ -55,70 +88,104 @@ export default function Decider() {
         ? FOODS
         : FOODS.filter(f => f.region === regionFilter);
 
-      // Exclude recently picked items (up to 1/3 of pool size)
-      const excludeCount = Math.max(1, Math.floor(pool.length / 3));
-      const recent = recentFood.current.slice(-excludeCount);
-      const available = pool.filter(f => !recent.includes(f.name));
-      const finalPool = available.length > 0 ? available : pool;
+      // ── Pick / maintain active group ───────────────────────────────────────
+      let group = activeGroupRef.current;
+      if (!group) {
+        group = pickNewGroup(regionFilter, exhaustedGroupsRef.current);
+        activeGroupRef.current  = group;
+        groupDislikeRef.current = 0;
+      }
+
+      // ── Get foods in this group ───────────────────────────────────────────
+      const groupFoods = pool.filter(f => f.group === group);
+      const workingPool = groupFoods.length > 0 ? groupFoods : pool; // fallback
+
+      // ── Anti-repeat within group ──────────────────────────────────────────
+      const excludeCount = Math.max(1, Math.floor(workingPool.length / 2));
+      const recent       = recentFood.current.slice(-excludeCount);
+      const available    = workingPool.filter(f => !recent.includes(f.name));
+      const finalPool    = available.length > 0 ? available : workingPool;
 
       const picked = finalPool[Math.floor(Math.random() * finalPool.length)];
-      recentFood.current = [...recentFood.current, picked.name].slice(-Math.max(10, excludeCount));
+      recentFood.current = [...recentFood.current, picked.name].slice(-20);
       item = picked.name;
       desc = picked.desc;
+
+      // ── Update group label display ────────────────────────────────────────
+      const meta = FOOD_GROUP_META.find(m => m.key === group);
+      setGroupLabel(meta ? `${meta.emoji} ${meta.label}` : null);
+      setGroupDislikeCount(groupDislikeRef.current);
+
     } else {
-      // Exclude recently picked activities (up to 1/3 of list)
+      // Activity — simple anti-repeat
       const excludeCount = Math.max(1, Math.floor(ACTIVITIES.length / 3));
-      const recent = recentActivity.current.slice(-excludeCount);
-      const available = ACTIVITIES.filter(a => !recent.includes(a));
-      const finalPool = available.length > 0 ? available : ACTIVITIES;
+      const recent       = recentActivity.current.slice(-excludeCount);
+      const available    = ACTIVITIES.filter(a => !recent.includes(a));
+      const finalPool    = available.length > 0 ? available : ACTIVITIES;
 
       item = finalPool[Math.floor(Math.random() * finalPool.length)];
-      recentActivity.current = [...recentActivity.current, item].slice(-Math.max(8, excludeCount));
+      recentActivity.current = [...recentActivity.current, item].slice(-10);
+      setGroupLabel(null);
+      setGroupDislikeCount(0);
     }
 
     setResult(item);
     setResultDesc(desc);
-
-    // Log action (fire-and-forget)
     logActivity({
-      category: "decider",
-      deciderItem: item,
-      deciderType: type,
-      device: getDevice(),
-      sessionId: getSessionId(),
+      category: "decider", deciderItem: item, deciderType: type,
+      device: getDevice(), sessionId: getSessionId(),
     });
-
     setLoading(false);
   };
 
+  // ── Like → keep group, show celebration ───────────────────────────────────
   const handleLike = () => {
     if (!result || !typeClicked || voteState !== "idle") return;
     setVoteState("liked");
     setShowCelebration(true);
     logActivity({
-      category: "decider_vote",
-      deciderItem: result,
-      deciderType: typeClicked,
-      vote: "like",
-      device: getDevice(),
-      sessionId: getSessionId(),
+      category: "decider_vote", deciderItem: result, deciderType: typeClicked,
+      vote: "like", device: getDevice(), sessionId: getSessionId(),
     });
     setTimeout(() => setShowCelebration(false), 3000);
   };
 
+  // ── Dislike → stay in group until threshold, then switch ──────────────────
   const handleDislike = () => {
     if (!result || !typeClicked || voteState !== "idle") return;
+
     logActivity({
-      category: "decider_vote",
-      deciderItem: result,
-      deciderType: typeClicked,
-      vote: "dislike",
-      device: getDevice(),
-      sessionId: getSessionId(),
+      category: "decider_vote", deciderItem: result, deciderType: typeClicked,
+      vote: "dislike", device: getDevice(), sessionId: getSessionId(),
     });
+
+    if (typeClicked === "food") {
+      const newCount = groupDislikeRef.current + 1;
+
+      if (newCount >= DISLIKE_THRESHOLD) {
+        // Exhaust current group → switch next roll
+        if (activeGroupRef.current) {
+          exhaustedGroupsRef.current = [...exhaustedGroupsRef.current, activeGroupRef.current];
+          // If all groups exhausted, reset exhausted list
+          const totalGroups = getGroupsForRegion(regionFilter).length;
+          if (exhaustedGroupsRef.current.length >= totalGroups) {
+            exhaustedGroupsRef.current = [];
+          }
+        }
+        activeGroupRef.current  = null;
+        groupDislikeRef.current = 0;
+        setGroupLabel(null);
+        setGroupDislikeCount(0);
+      } else {
+        groupDislikeRef.current = newCount;
+        setGroupDislikeCount(newCount);
+      }
+    }
+
     handleRoll(typeClicked);
   };
 
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -139,22 +206,18 @@ export default function Decider() {
         </p>
         <div className="flex gap-2 flex-wrap">
           {REGION_OPTIONS.map((r) => (
-            <button
-              key={r.key}
-              onClick={() => setRegionFilter(r.key)}
+            <button key={r.key}
+              onClick={() => { setRegionFilter(r.key); resetGroups(); setResult(null); }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border shadow-sm ${
                 regionFilter === r.key
                   ? "bg-primary/20 border-primary/50 text-primary"
                   : "bg-white/30 border-white/40 text-foreground/60 hover:bg-white/50 hover:border-white/70 hover:text-foreground"
-              }`}
-            >
+              }`}>
               <span>{r.emoji}</span>
               <span>{r.label}</span>
               <span className={`text-xs rounded-full px-1.5 py-0.5 ml-0.5 ${
                 regionFilter === r.key ? "bg-primary/20 text-primary" : "bg-white/40 text-foreground/40"
-              }`}>
-                {r.count}
-              </span>
+              }`}>{r.count}</span>
             </button>
           ))}
         </div>
@@ -193,17 +256,35 @@ export default function Decider() {
               </div>
             ) : (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-3 w-full">
+
+                {/* Group label indicator */}
+                {groupLabel && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="flex items-center gap-2">
+                    <span className="text-xs bg-white/40 border border-white/50 rounded-full px-3 py-1 text-foreground/50 font-medium">
+                      {groupLabel}
+                    </span>
+                    {/* Dislike dots indicator */}
+                    {groupDislikeCount > 0 && (
+                      <div className="flex gap-1" title={`${groupDislikeCount}/${DISLIKE_THRESHOLD} lần không thích nhóm này`}>
+                        {Array.from({ length: DISLIKE_THRESHOLD }).map((_, i) => (
+                          <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                            i < groupDislikeCount ? "bg-accent/60" : "bg-foreground/15"
+                          }`} />
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
                 <p className="text-sm text-foreground/60 uppercase tracking-widest font-medium">
                   {typeClicked === "food" ? "Bạn nên ăn" : "Bạn nên"}
                 </p>
                 <h3 className="text-3xl md:text-4xl font-serif font-bold text-foreground">{result}</h3>
 
-                {/* Food description */}
                 {resultDesc && (
-                  <motion.p
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-                    className="text-sm text-foreground/55 italic max-w-xs leading-relaxed"
-                  >
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+                    className="text-sm text-foreground/55 italic max-w-xs leading-relaxed">
                     {resultDesc}
                   </motion.p>
                 )}
