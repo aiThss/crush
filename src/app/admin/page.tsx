@@ -55,14 +55,21 @@ function getDetail(log: Log): string {
   switch (log.category) {
     case "page_visit":
       return PAGE_MAP[log.page ?? ""] ?? log.page ?? "—";
-    case "music":
-      return `${MOOD_EMOJI[log.mood ?? ""] ?? ""} ${log.mood} → ${log.song} (${log.artist})`;
+    case "music": {
+      const emoji = MOOD_EMOJI[log.mood ?? ""] ?? "";
+      const mood = log.mood ?? "—";
+      const song = log.song ?? "—";
+      const artist = log.artist ?? "—";
+      return `${emoji} ${mood} → ${song} (${artist})`;
+    }
     case "decider":
-      return `${log.deciderType === "food" ? "🍜 Ăn" : "🎯 Làm"}: ${log.deciderItem}`;
+      return `${log.deciderType === "food" ? "🍜 Ăn" : "🎯 Làm"}: ${log.deciderItem ?? "—"}`;
     case "decider_vote":
-      return `${log.vote === "like" ? "👍 Thích" : "👎 Ngán"} món ${log.deciderItem}`;
-    case "cosmic":
-      return `${log.userName} (${log.birthdate}) · ${(log.horoscopeResult ?? "").slice(0, 60)}...`;
+      return `${log.vote === "like" ? "👍 Thích" : "👎 Ngán"} ${log.deciderType === "food" ? "món" : "việc"} ${log.deciderItem ?? "—"}`;
+    case "cosmic": {
+      const preview = (log.horoscopeResult ?? "").slice(0, 60);
+      return `${log.userName ?? "—"} (${log.birthdate ?? "—"})${preview ? ` · ${preview}...` : ""}`;
+    }
     default:
       return "—";
   }

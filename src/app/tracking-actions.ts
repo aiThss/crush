@@ -29,11 +29,6 @@ export async function logActivity(payload: ActivityPayload) {
     const h = await headers();
     const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
-    // Rate-limit logging: max 1 activity_log per IP per second
-    const oneSecAgo = new Date(Date.now() - 1000);
-    const recentCount = await ActivityLog.countDocuments({ ip, timestamp: { $gt: oneSecAgo } });
-    if (recentCount >= 5) return; // silent skip
-
     await ActivityLog.create({
       ip,
       timestamp: new Date(),

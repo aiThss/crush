@@ -169,7 +169,7 @@ export default function StreamVibe() {
     setCurrentVibe(chosen);
     logActivity({
       category: "music",
-      mood: mood + " (shuffle)",
+      mood,
       song: chosen.song,
       artist: chosen.artist,
       device: getDevice(),

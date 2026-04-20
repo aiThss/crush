@@ -93,15 +93,15 @@ export async function getRandomDecision(type: "food" | "activity") {
     await connectDB();
     const items = await DeciderItem.find({ type });
     if (items.length === 0) {
-      // Seed some default data if empty
+      // Seed default data for the requested type only
       const defaultFoods = ["Phở Gà", "Bò Né", "Cơm Tấm", "Sushi", "Bún Đậu Mắm Tôm", "Bánh Mì Huynh Hoa", "Salad Ức Gà (healthy xíu)", "Lẩu Thái"];
       const defaultActivities = ["Chạy bộ đón gió", "Cày nốt series Netflix", "Ngủ nướng", "Đi dạo chill chill lúc ráng chiều", "Nghe trọn một album của Lana Del Rey", "Đọc vài trang sách mỏ hỗn"];
-      
-      const toInsert = defaultFoods.map(f => ({ name: f, type: "food" }))
-        .concat(defaultActivities.map(a => ({ name: a, type: "activity" })));
-      
-      await DeciderItem.insertMany(toInsert);
-      
+
+      const seedData = (type === "food" ? defaultFoods : defaultActivities)
+        .map(name => ({ name, type }));
+
+      await DeciderItem.insertMany(seedData);
+
       const newItems = await DeciderItem.find({ type });
       const randomIndex = Math.floor(Math.random() * newItems.length);
       return { success: true, result: newItems[randomIndex].name };

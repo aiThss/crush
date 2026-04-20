@@ -108,13 +108,13 @@ export default function Decider() {
                 </p>
                 <h3 className="text-3xl md:text-4xl font-serif font-bold text-foreground">{result}</h3>
 
-                {typeClicked === "food" && voteState === "idle" && (
+                {voteState === "idle" && (
                   <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
                     className="flex items-center gap-3 mt-2 flex-wrap justify-center">
                     <p className="text-xs text-foreground/50">Nghe hợp lý không?</p>
                     <button onClick={handleLike}
                       className="flex items-center gap-1.5 bg-white/40 hover:bg-primary/20 border border-white/50 hover:border-primary/30 text-foreground px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm">
-                      <ThumbsUp size={14} /> Ăn được!
+                      <ThumbsUp size={14} /> Được!
                     </button>
                     <button onClick={handleDislike}
                       className="flex items-center gap-1.5 bg-white/40 hover:bg-accent/20 border border-white/50 hover:border-accent/30 text-foreground px-4 py-2 rounded-full text-sm font-medium transition-all shadow-sm">
@@ -124,7 +124,7 @@ export default function Decider() {
                 )}
                 {voteState === "liked" && (
                   <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-primary font-medium mt-2">
-                    ✨ Chúc bạn ngon miệng nhé!
+                    ✨ {typeClicked === "food" ? "Chúc bạn ngon miệng!" : "Chúc bạn vui vẻ nhé!"}
                   </motion.p>
                 )}
               </motion.div>
@@ -143,11 +143,14 @@ export default function Decider() {
               exit={{ opacity: 0, scale: 0.8, y: 20 }} transition={{ type: "spring", damping: 18, stiffness: 280 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[85vw] max-w-xs">
               <div className="glass-card rounded-3xl p-8 flex flex-col items-center gap-4 text-center shadow-xl border border-white/60">
-                <motion.div animate={{ rotate: [0, -10, 10, -5, 5, 0] }} transition={{ duration: 0.6 }} className="text-5xl">🍽️</motion.div>
+                <motion.div animate={{ rotate: [0, -10, 10, -5, 5, 0] }} transition={{ duration: 0.6 }} className="text-5xl">
+                  {typeClicked === "food" ? "🍽️" : "🎯"}
+                </motion.div>
                 <h3 className="font-serif font-bold text-xl text-foreground">Tuyệt vời!</h3>
                 <p className="text-foreground/70 text-sm leading-relaxed">
-                  Chúc bạn thưởng thức bữa ăn thật vui vẻ nhé 🌸<br />
-                  <span className="text-foreground/50 text-xs">Ăn ngon, sống khoẻ, vũ trụ yêu bạn!</span>
+                  {typeClicked === "food"
+                    ? <>Chúc bạn thưởng thức bữa ăn thật vui vẻ nhé 🌸<br /><span className="text-foreground/50 text-xs">Ăn ngon, sống khoẻ, vũ trụ yêu bạn!</span></>
+                    : <>Chúc bạn có một buổi thật vui và ý nghĩa 🌟<br /><span className="text-foreground/50 text-xs">Cứ thế mà làm, vũ trụ sẽ sắp xếp hết!</span></>}
                 </p>
                 <button onClick={() => setShowCelebration(false)}
                   className="mt-2 px-6 py-2 bg-primary hover:bg-primary-glow text-white rounded-full text-sm font-medium transition-colors shadow-sm">

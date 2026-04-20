@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, MouseEvent } from "react";
+import { useState, useEffect, MouseEvent, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { Sparkles, Music, Dices, ArrowRight, X } from "lucide-react";
 import CosmicGuide from "@/components/CosmicGuide";
@@ -84,15 +84,15 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const handleGlobalMouseMove = (e: globalThis.MouseEvent) => {
+  const handleGlobalMouseMove = useCallback((e: globalThis.MouseEvent) => {
     mouseX.set(e.clientX);
     mouseY.set(e.clientY);
-  };
+  }, [mouseX, mouseY]);
 
   useEffect(() => {
     if (!isMobile) window.addEventListener("mousemove", handleGlobalMouseMove);
     return () => window.removeEventListener("mousemove", handleGlobalMouseMove);
-  });
+  }, [isMobile, handleGlobalMouseMove]);
 
   const handleTabOpen = (tab: Exclude<Tab, null>) => {
     setActiveTab(tab);

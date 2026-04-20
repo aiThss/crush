@@ -52,7 +52,13 @@ export default function CosmicGuide() {
         </div>
       </div>
 
-      {!result && !error ? (
+      {loading ? (
+        <div className="flex flex-col items-center justify-center gap-5 py-12">
+          <Loader2 className="animate-spin text-primary" size={36} />
+          <p className="text-foreground/60 text-sm font-medium">Đang kết nối vũ trụ...</p>
+          <p className="text-foreground/40 text-xs">Vũ trụ đang tìm tín hiệu dành riêng cho bạn ✨</p>
+        </div>
+      ) : !result && !error ? (
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-4">
           <div className="flex flex-col gap-2">
             <label className="text-sm text-foreground/80 font-medium ml-1">Tên của cậu là gì?</label>
@@ -71,10 +77,10 @@ export default function CosmicGuide() {
               required
             />
           </div>
-          <button type="submit" disabled={loading || !name || !birthdate}
+          <button type="submit" disabled={!name || !birthdate}
             className="mt-4 w-full bg-primary hover:bg-primary-glow text-white font-medium py-3.5 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm">
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-            {loading ? "Đang kết nối vũ trụ..." : "Rút quẻ hôm nay"}
+            <Sparkles size={20} />
+            Rút quẻ hôm nay
           </button>
         </form>
       ) : (
