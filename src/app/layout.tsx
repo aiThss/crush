@@ -17,6 +17,8 @@ const dancing = Dancing_Script({
   subsets: ["latin", "vietnamese"],
 });
 
+import FloatingStars from "@/components/FloatingStars";
+
 export const metadata: Metadata = {
   title: "Tín hiệu từ vũ trụ",
   description: "Trạm sạc năng lượng vũ trụ - Celestial Minimalist portal",
@@ -33,6 +35,7 @@ export default function RootLayout({
         className={`${comfortaa.variable} ${quicksand.variable} ${dancing.variable} font-sans antialiased text-foreground bg-background min-h-screen`}
         suppressHydrationWarning
       >
+        <FloatingStars />
         {children}
       </body>
     </html>
