@@ -148,7 +148,7 @@ export default function Home() {
         <span className="text-primary font-medium tracking-widest uppercase text-xs sm:text-sm mb-4">
           Nơi vũ trụ quyết định thay bạn
         </span>
-        <h1 style={{ fontFamily: "'Courier New', Courier, monospace" }} className="text-4xl sm:text-6xl font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
+        <h1 style={{ fontFamily: "var(--font-roboto-mono), monospace" }} className="text-4xl sm:text-6xl font-bold tracking-tight text-foreground mb-6 drop-shadow-sm">
           Tín hiệu từ vũ trụ
         </h1>
         <p className="text-foreground/80 max-w-lg text-sm sm:text-base leading-relaxed">

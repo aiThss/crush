@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Comfortaa, Quicksand, Dancing_Script } from "next/font/google";
+import { Comfortaa, Quicksand, Dancing_Script, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 
 const comfortaa = Comfortaa({
@@ -14,6 +14,11 @@ const quicksand = Quicksand({
 
 const dancing = Dancing_Script({
   variable: "--font-dancing",
+  subsets: ["latin", "vietnamese"],
+});
+
+const robotoMono = Roboto_Mono({
+  variable: "--font-roboto-mono",
   subsets: ["latin", "vietnamese"],
 });
 
@@ -32,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body
-        className={`${comfortaa.variable} ${quicksand.variable} ${dancing.variable} font-sans antialiased text-foreground bg-background min-h-screen`}
+        className={`${comfortaa.variable} ${quicksand.variable} ${dancing.variable} ${robotoMono.variable} font-sans antialiased text-foreground bg-background min-h-screen`}
         suppressHydrationWarning
       >
         <FloatingStars />
