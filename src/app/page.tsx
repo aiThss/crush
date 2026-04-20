@@ -233,10 +233,15 @@ export default function Home() {
       </AnimatePresence>
 
       {/* Footer */}
-      <div className="absolute bottom-4 left-0 w-full flex flex-col items-center justify-center text-[10px] md:text-xs text-foreground/40 font-mono text-center z-0 transition-opacity">
-        <p>Copyright belongs to aiThs</p>
-        <p>Owner contact: duongdanh245@gmail.com</p>
-      </div>
+      {!activeTab && (
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }}
+          className="relative mt-8 w-full flex flex-col items-center justify-center text-[10px] md:text-xs text-foreground/40 font-mono text-center z-0"
+        >
+          <p>Copyright belongs to aiThs</p>
+          <p>Owner contact: duongdanh245@gmail.com</p>
+        </motion.div>
+      )}
     </main>
   );
 }
