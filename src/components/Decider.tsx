@@ -9,14 +9,15 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type VoteState = "idle" | "liked" | "disliked";
 type RegionFilter = "all" | Region;
+type CategoryFilter = "all" | "an-chinh" | "an-vat";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const DISLIKE_THRESHOLD = 3; // dislikes within a group before switching to next group
 
 // ─── Region selector data ─────────────────────────────────────────────────────
 // ─── Region selector helper ──────────────────────────────────────────────────
-function getRegionCount(foods: any[], region: string) {
-  return foods.filter(f => f.region === region).length;
+function getFilteredCount(foods: any[], region: string, category: CategoryFilter) {
+  return foods.filter(f => f.region === region && (category === "all" || f.category === category)).length;
 }
 
 const REGION_LABEL: Record<RegionFilter, string> = {
@@ -24,13 +25,16 @@ const REGION_LABEL: Record<RegionFilter, string> = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function getGroupsForRegion(foods: any[], region: RegionFilter): string[] {
-  const pool = region === "all" ? foods : foods.filter(f => f.region === region);
+function getGroupsForRegion(foods: any[], region: RegionFilter, category: CategoryFilter): string[] {
+  const pool = foods.filter(f => 
+    (region === "all" || f.region === region) && 
+    (category === "all" || f.category === category)
+  );
   return [...new Set(pool.map(f => f.group))];
 }
 
-function pickNewGroup(foods: any[], region: RegionFilter, exhausted: string[]): string {
-  const all = getGroupsForRegion(foods, region);
+function pickNewGroup(foods: any[], region: RegionFilter, category: CategoryFilter, exhausted: string[]): string {
+  const all = getGroupsForRegion(foods, region, category);
   const available = all.filter(g => !exhausted.includes(g));
   const pool = available.length > 0 ? available : all; // reset if all exhausted
   return pool[Math.floor(Math.random() * pool.length)];
@@ -40,11 +44,19 @@ function pickNewGroup(foods: any[], region: RegionFilter, exhausted: string[]): 
 export default function Decider({ initialFoods = [] }: { initialFoods?: any[] }) {
   const foods = initialFoods.length > 0 ? initialFoods : [];
   
+  const [categoryFilter, setCategoryFilter]   = useState<CategoryFilter>("all");
+  
+  const CATEGORY_OPTIONS: { key: CategoryFilter; label: string; emoji: string; count: number }[] = [
+    { key: "all",      label: "Ăn gì cũng được", emoji: "🍱", count: foods.length },
+    { key: "an-chinh", label: "Ăn no (bữa chính)", emoji: "🍲", count: foods.filter(f => f.category === "an-chinh").length },
+    { key: "an-vat",   label: "Ăn vặt / Tráng miệng", emoji: "🧋", count: foods.filter(f => f.category === "an-vat").length },
+  ];
+
   const REGION_OPTIONS: { key: RegionFilter; label: string; emoji: string; count: number }[] = [
-    { key: "all",   label: "Tất cả",     emoji: "🌏", count: foods.length },
-    { key: "bac",   label: "Miền Bắc",   emoji: "🌿", count: getRegionCount(foods, "bac") },
-    { key: "trung", label: "Miền Trung", emoji: "🌊", count: getRegionCount(foods, "trung") },
-    { key: "nam",   label: "Miền Nam",   emoji: "🌴", count: getRegionCount(foods, "nam") },
+    { key: "all",   label: "Tất cả",     emoji: "🌏", count: foods.filter(f => categoryFilter === "all" || f.category === categoryFilter).length },
+    { key: "bac",   label: "Miền Bắc",   emoji: "🌿", count: getFilteredCount(foods, "bac", categoryFilter) },
+    { key: "trung", label: "Miền Trung", emoji: "🌊", count: getFilteredCount(foods, "trung", categoryFilter) },
+    { key: "nam",   label: "Miền Nam",   emoji: "🌴", count: getFilteredCount(foods, "nam", categoryFilter) },
   ];
 
   const [loading, setLoading]                 = useState(false);
@@ -91,14 +103,15 @@ export default function Decider({ initialFoods = [] }: { initialFoods?: any[] })
     let desc: string | null = null;
 
     if (type === "food") {
-      const pool = regionFilter === "all"
-        ? foods
-        : foods.filter(f => f.region === regionFilter);
+      const pool = foods.filter(f => 
+        (regionFilter === "all" || f.region === regionFilter) &&
+        (categoryFilter === "all" || f.category === categoryFilter)
+      );
 
       // ── Pick / maintain active group ───────────────────────────────────────
       let group = activeGroupRef.current;
       if (!group) {
-        group = pickNewGroup(foods, regionFilter, exhaustedGroupsRef.current);
+        group = pickNewGroup(foods, regionFilter, categoryFilter, exhaustedGroupsRef.current);
         activeGroupRef.current  = group;
         groupDislikeRef.current = 0;
       }
@@ -174,7 +187,7 @@ export default function Decider({ initialFoods = [] }: { initialFoods?: any[] })
         if (activeGroupRef.current) {
           exhaustedGroupsRef.current = [...exhaustedGroupsRef.current, activeGroupRef.current];
           // If all groups exhausted, reset exhausted list
-          const totalGroups = getGroupsForRegion(foods, regionFilter).length;
+          const totalGroups = getGroupsForRegion(foods, regionFilter, categoryFilter).length;
           if (exhaustedGroupsRef.current.length >= totalGroups) {
             exhaustedGroupsRef.current = [];
           }
@@ -206,27 +219,58 @@ export default function Decider({ initialFoods = [] }: { initialFoods?: any[] })
         </div>
       </div>
 
-      {/* Region Filter */}
-      <div className="mb-6">
-        <p className="text-xs text-foreground/45 uppercase tracking-widest font-medium mb-3">
-          🗺️ Chọn vùng miền
-        </p>
-        <div className="flex gap-2 flex-wrap">
-          {REGION_OPTIONS.map((r) => (
-            <button key={r.key}
-              onClick={() => { setRegionFilter(r.key); resetGroups(); setResult(null); }}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border shadow-sm ${
-                regionFilter === r.key
-                  ? "bg-primary/20 border-primary/50 text-primary"
-                  : "bg-white/30 border-white/40 text-foreground/60 hover:bg-white/50 hover:border-white/70 hover:text-foreground"
-              }`}>
-              <span>{r.emoji}</span>
-              <span>{r.label}</span>
-              <span className={`text-xs rounded-full px-1.5 py-0.5 ml-0.5 ${
-                regionFilter === r.key ? "bg-primary/20 text-primary" : "bg-white/40 text-foreground/40"
-              }`}>{r.count}</span>
-            </button>
-          ))}
+      {/* Filter Section */}
+      <div className="mb-6 flex flex-col gap-4">
+        
+        {/* Category Filter */}
+        <div>
+          <p className="text-[11px] text-foreground/45 uppercase tracking-widest font-medium mb-2.5">
+            1. Bạn muốn ăn kiểu gì?
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {CATEGORY_OPTIONS.map((c) => (
+              <button key={c.key}
+                onClick={() => { setCategoryFilter(c.key); resetGroups(); setResult(null); }}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border shadow-sm ${
+                  categoryFilter === c.key
+                    ? "bg-accent/20 border-accent/50 text-accent"
+                    : "bg-white/30 border-white/40 text-foreground/60 hover:bg-white/50 hover:border-white/70 hover:text-foreground"
+                }`}>
+                <span>{c.emoji}</span>
+                <span>{c.label}</span>
+                <span className={`text-[10px] rounded-full px-1.5 py-0.5 ml-0.5 ${
+                  categoryFilter === c.key ? "bg-accent/20 text-accent" : "bg-white/40 text-foreground/40"
+                }`}>{c.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Region Filter */}
+        <div>
+          <p className="text-[11px] text-foreground/45 uppercase tracking-widest font-medium mb-2.5">
+            2. Vùng Tiên cảnh nào đây?
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {REGION_OPTIONS.map((r) => (
+              <button key={r.key}
+                onClick={() => { setRegionFilter(r.key); resetGroups(); setResult(null); }}
+                disabled={r.count === 0}
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition-all border shadow-sm ${
+                  r.count === 0 ? "opacity-30 cursor-not-allowed bg-white/10 text-foreground/30 border-white/10" :
+                  regionFilter === r.key
+                    ? "bg-primary/20 border-primary/50 text-primary"
+                    : "bg-white/30 border-white/40 text-foreground/60 hover:bg-white/50 hover:border-white/70 hover:text-foreground"
+                }`}>
+                <span>{r.emoji}</span>
+                <span>{r.label}</span>
+                <span className={`text-[10px] rounded-full px-1.5 py-0.5 ml-0.5 ${
+                  r.count === 0 ? "bg-white/5" :
+                  regionFilter === r.key ? "bg-primary/20 text-primary" : "bg-white/40 text-foreground/40"
+                }`}>{r.count}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
